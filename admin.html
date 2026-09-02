@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADMIN CONTROL // QQC</title>
+    <link rel="icon" id="adminFavicon" href="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #030305; --accent: #ffffff; --panel-bg: rgba(12, 12, 18, 0.88); --border-color: rgba(255, 255, 255, 0.2);
+        }
+        body { margin: 0; padding: 0; min-height: 100vh; width: 100vw; font-family: 'Inter', sans-serif; background-color: var(--bg-deep); color: #ffffff; display: flex; flex-direction: column; }
+        #bg-image { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-size: cover; background-position: center; z-index: 0; filter: brightness(0.3); }
+        .bg-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(3, 3, 5, 0.9); z-index: 1; pointer-events: none; }
+        .container { position: relative; z-index: 3; max-width: 1100px; margin: 0 auto; padding: 40px 20px 80px; width: 100%; box-sizing: border-box; flex: 1; }
+        
+        #loginOverlay { position: fixed; inset: 0; background: rgba(3,3,5,0.96); z-index: 999; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(20px); }
+        .login-card { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 40px; width: 100%; max-width: 420px; box-sizing: border-box; box-shadow: 0 25px 60px rgba(0,0,0,0.9); text-align: center; }
+        .login-card h2 { font-family: 'Oswald', sans-serif; color: #fff; letter-spacing: 0.2em; margin-bottom: 25px; }
+        .form-control { width: 100%; padding: 14px 18px; margin-bottom: 18px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; color: #fff; font-size: 0.9rem; box-sizing: border-box; outline: none; }
+        .form-control:focus { border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.25); }
+        .btn-action-main { background: #fff; color: #000; border: none; padding: 14px; border-radius: 12px; font-family: 'Oswald', sans-serif; font-size: 0.9rem; font-weight: 700; letter-spacing: 0.2em; cursor: pointer; width: 100%; transition: 0.3s; }
+        .btn-action-main:hover { background: #d0d0d0; box-shadow: 0 0 20px rgba(255,255,255,0.4); }
+
+        #adminDashboard { display: none; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 20px; }
+        .admin-title { font-family: 'Oswald', sans-serif; font-size: 2rem; letter-spacing: 0.2em; color: #fff; margin: 0; }
+        .admin-section { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 25px; margin-bottom: 30px; box-shadow: 0 15px 40px rgba(0,0,0,0.7); backdrop-filter: blur(15px); }
+        .section-title { font-family: 'Oswald', sans-serif; font-size: 1.2rem; color: #fff; letter-spacing: 0.15em; margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        label { display: block; font-size: 0.75rem; color: #aaa; letter-spacing: 0.1em; margin-bottom: 6px; text-transform: uppercase; font-weight: 600; }
+        .logo-preview-box { width: 90px; height: 90px; border-radius: 50%; border: 1.5px dashed rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; overflow: hidden; background: rgba(0,0,0,0.5); margin-top: 10px; }
+        .logo-preview-box img { width: 100%; height: 100%; object-fit: contain; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 0.85rem; }
+        th { color: #aaa; font-family: 'Oswald', sans-serif; letter-spacing: 0.1em; }
+        .btn-action { padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; cursor: pointer; border: none; transition: 0.2s; }
+        .btn-edit { background: rgba(51,153,255,0.2); color: #3399ff; border: 1px solid rgba(51,153,255,0.4); margin-right: 5px; }
+        .btn-del { background: rgba(255,51,68,0.2); color: #ff3344; border: 1px solid rgba(255,51,68,0.4); }
+        .btn-back { text-decoration: none; color: #aaa; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.2em; border: 1px solid rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 12px; transition: 0.3s; display: inline-block; text-align: center; }
+        .btn-back:hover { color: #fff; border-color: #fff; background: rgba(255,255,255,0.1); }
+
+        #toastContainer { position: fixed; top: 25px; right: 25px; z-index: 99999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { background: rgba(14, 14, 22, 0.95); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 14px 22px; border-radius: 12px; font-size: 0.85rem; letter-spacing: 0.05em; box-shadow: 0 15px 40px rgba(0,0,0,0.8); backdrop-filter: blur(15px); pointer-events: auto; animation: slideIn 0.4s forwards, fadeOut 0.4s ease 2.6s forwards; }
+        @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
+
+        @media (max-width: 768px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div id="bg-image"></div>
+    <div class="bg-overlay"></div>
+    <div id="toastContainer"></div>
+
+    <div id="loginOverlay">
+        <div class="login-card">
+            <h2>ADMIN AUTHENTICATION</h2>
+            <form id="loginForm">
+                <input type="email" id="adminEmail" class="form-control" placeholder="Admin Email" required>
+                <input type="password" id="adminPass" class="form-control" placeholder="Password" required>
+                <button type="submit" class="btn-action-main">ACCESS SYSTEM</button>
+            </form>
+            <div id="loginError" style="color: #ff3344; font-size: 0.75rem; margin-top: 12px; display: none;">อีเมลหรือรหัสผ่านไม่ถูกต้อง</div>
+            <div style="margin-top: 20px;"><a href="index.html" class="btn-back">RETURN TO HOME</a></div>
+        </div>
+    </div>
+
+    <div id="adminDashboard" class="container">
+        <div class="admin-header">
+            <h1 class="admin-title">SYSTEM CONTROL PANEL</h1>
+            <a href="index.html" class="btn-back">GO TO WEBSITE</a>
+        </div>
+
+        <div class="admin-section">
+            <h2 class="section-title">HOMEPAGE & BRANDING CONFIG</h2>
+            <form id="siteConfigForm">
+                <div class="grid-2">
+                    <div>
+                        <label>Main Title (ชื่อเว็บหลัก)</label>
+                        <input type="text" id="cfgMainTitle" class="form-control">
+                        <label>Sub Title (ข้อความใต้ชื่อหลัก)</label>
+                        <input type="text" id="cfgSubTitle" class="form-control">
+                        <label>Background Image URL (ลิงก์รูปพื้นหลัง)</label>
+                        <input type="text" id="cfgBgUrl" class="form-control">
+                        <label>Favicon URL (.ico / รูปโลโก้เว็บเบราว์เซอร์)</label>
+                        <input type="text" id="cfgFaviconUrl" class="form-control" placeholder="https://...">
+                    </div>
+                    <div>
+                        <label>Logo Image URL (ลิงก์รูปโลโก้ในวงกลม)</label>
+                        <input type="text" id="cfgLogoUrl" class="form-control">
+                        <label>Logo Size & Scale (ขนาดโลโก้ เช่น 85%)</label>
+                        <input type="text" id="cfgLogoWidth" class="form-control">
+                        <label>Default Avatar URL (รูปโปรไฟล์สำรอง)</label>
+                        <input type="text" id="cfgDefaultAvatar" class="form-control" placeholder="https://...">
+                        <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
+                            <div>
+                                <label>Background Opacity</label>
+                                <input type="number" step="0.05" min="0.3" max="1" id="cfgBgOpacity" class="form-control">
+                            </div>
+                            <div>
+                                <label>Logo Preview</label>
+                                <div class="logo-preview-box">
+                                    <img id="previewLogoImg" src="" alt="Preview">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn-action-main" style="margin-top: 15px;">SAVE HOMEPAGE SETTINGS</button>
+            </form>
+        </div>
+
+        <div class="admin-section">
+            <h2 class="section-title">AUDIO STREAM & COVER CONFIG</h2>
+            <form id="musicConfigForm">
+                <div class="grid-2">
+                    <div>
+                        <label>Track Title (ชื่อเพลง)</label>
+                        <input type="text" id="cfgMusicTitle" class="form-control">
+                        <label>Source Link Text (ข้อความลิงก์เพลง)</label>
+                        <input type="text" id="cfgMusicLinkText" class="form-control">
+                    </div>
+                    <div>
+                        <label>Source Link URL (ลิงก์เว็บไซต์เพลง)</label>
+                        <input type="text" id="cfgMusicLinkUrl" class="form-control">
+                        <label>Music Cover URL (ลิงก์รูปปกเพลง)</label>
+                        <input type="text" id="cfgMusicCoverUrl" class="form-control" placeholder="https://...">
+                    </div>
+                </div>
+                <button type="submit" class="btn-action-main" style="margin-top: 15px;">UPDATE AUDIO SETTINGS</button>
+            </form>
+        </div>
+
+        <div class="admin-section">
+            <h2 class="section-title">PARTNER MANAGEMENT</h2>
+            <form id="partnerForm" style="background: rgba(0,0,0,0.4); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); margin-bottom: 25px;">
+                <input type="hidden" id="editPartnerId">
+                <div class="grid-2">
+                    <div>
+                        <label>Partner Name (ชื่อพาร์ทเนอร์ เช่น Qaqen)</label>
+                        <input type="text" id="partnerName" class="form-control" required>
+                    </div>
+                    <div>
+                        <label>Partner Website URL (ลิงก์เว็บไซต์พาร์ทเนอร์)</label>
+                        <input type="text" id="partnerUrl" class="form-control" placeholder="https://..." required>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button type="submit" class="btn-action-main" id="savePartnerBtn" style="flex: 2;">ADD NEW PARTNER</button>
+                    <button type="button" id="cancelPartnerEditBtn" class="btn-back" style="flex: 1; display: none;">CANCEL</button>
+                </div>
+            </form>
+
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>PARTNER NAME</th><th>WEBSITE URL</th><th style="text-align: right;">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminPartnerTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="admin-section">
+            <h2 class="section-title">MEMBER DATABASE MANAGEMENT</h2>
+            <form id="memberForm" style="background: rgba(0,0,0,0.4); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); margin-bottom: 25px;">
+                <input type="hidden" id="editMemberId">
+                <div class="grid-3">
+                    <div>
+                        <label>Member Name (ชื่อสมาชิก)</label>
+                        <input type="text" id="memberName" class="form-control" required>
+                    </div>
+                    <div>
+                        <label>Role / Category (หมวดหมู่ตำแหน่ง)</label>
+                        <select id="memberRole" class="form-control" required>
+                            <option value="FOUNDERS">FOUNDERS</option>
+                            <option value="LEADERS">LEADERS</option>
+                            <option value="SUPPORT & BY">SUPPORT & BY</option>
+                            <option value="MEMBERS">MEMBERS</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Facebook Profile URL</label>
+                        <input type="text" id="memberFb" class="form-control">
+                    </div>
+                </div>
+                <div style="margin-top: 10px;">
+                    <label>Individual Avatar URL (รูปโปรไฟล์เฉพาะบุคคล)</label>
+                    <input type="text" id="memberAvatar" class="form-control" placeholder="ถ้าไม่ใส่ จะใช้รูป Default ส่วนกลาง">
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button type="submit" class="btn-action-main" id="saveMemberBtn" style="flex: 2;">ADD NEW MEMBER</button>
+                    <button type="button" id="cancelEditBtn" class="btn-back" style="flex: 1; display: none;">CANCEL</button>
+                </div>
+            </form>
+
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>AVATAR</th><th>NAME</th><th>ROLE</th><th>FACEBOOK</th><th style="text-align: right;">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminMemberTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showToast(message) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerText = message;
+            container.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 3000);
+        }
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, onSnapshot, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // TODO: ใส่ Firebase Config ของคุณที่นี่
+        const firebaseConfig = {
+            apiKey: "AIzaSyBQs9obMhJdNNb7vPp69qzOOLs1OIsQYpI",
+            authDomain: "leroy-ebc56.firebaseapp.com",
+            projectId: "leroy-ebc56",
+            storageBucket: "leroy-ebc56.firebasestorage.app",
+            messagingSenderId: "644392545266",
+            appId: "1:644392545266:web:c53222b8c438065f52196b"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const loginForm = document.getElementById('loginForm');
+        const loginOverlay = document.getElementById('loginOverlay');
+        const adminDashboard = document.getElementById('adminDashboard');
+        const loginError = document.getElementById('loginError');
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (document.getElementById('adminEmail').value.trim() === "leroyborntodie@gmail.com" && document.getElementById('adminPass').value.trim() === "dekleroy950") {
+                loginOverlay.style.display = 'none'; adminDashboard.style.display = 'block';
+                sessionStorage.setItem('isAdminLoggedIn', 'true');
+                showToast('✨ เข้าสู่ระบบผู้ดูแลระบบสำเร็จ');
+            } else { loginError.style.display = 'block'; }
+        });
+
+        if (sessionStorage.getItem('isAdminLoggedIn') === 'true') {
+            loginOverlay.style.display = 'none'; adminDashboard.style.display = 'block';
+        }
+
+        const homepageRef = doc(db, "settings", "homepage");
+        getDoc(homepageRef).then((docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                document.getElementById('cfgMainTitle').value = data.mainTitle || '';
+                document.getElementById('cfgSubTitle').value = data.subTitle || '';
+                document.getElementById('cfgBgUrl').value = data.bgUrl || '';
+                document.getElementById('cfgFaviconUrl').value = data.faviconUrl || '';
+                document.getElementById('cfgLogoUrl').value = data.logoUrl || '';
+                document.getElementById('cfgLogoWidth').value = data.logoWidth || '';
+                document.getElementById('cfgDefaultAvatar').value = data.defaultAvatar || '';
+                document.getElementById('cfgBgOpacity').value = data.bgOpacity || '0.85';
+                document.getElementById('cfgMusicTitle').value = data.musicTitle || '';
+                document.getElementById('cfgMusicLinkText').value = data.musicLinkText || '';
+                document.getElementById('cfgMusicLinkUrl').value = data.musicLinkUrl || '';
+                document.getElementById('cfgMusicCoverUrl').value = data.musicCoverUrl || '';
+                if (data.logoUrl) document.getElementById('previewLogoImg').src = data.logoUrl;
+                if (data.faviconUrl) document.getElementById('adminFavicon').href = data.faviconUrl;
+            }
+        });
+
+        document.getElementById('siteConfigForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await setDoc(homepageRef, {
+                mainTitle: document.getElementById('cfgMainTitle').value,
+                subTitle: document.getElementById('cfgSubTitle').value,
+                bgUrl: document.getElementById('cfgBgUrl').value,
+                faviconUrl: document.getElementById('cfgFaviconUrl').value,
+                logoUrl: document.getElementById('cfgLogoUrl').value,
+                logoWidth: document.getElementById('cfgLogoWidth').value,
+                defaultAvatar: document.getElementById('cfgDefaultAvatar').value,
+                bgOpacity: parseFloat(document.getElementById('cfgBgOpacity').value) || 0.85
+            }, { merge: true });
+            showToast('💾 บันทึกการตั้งค่าหน้าเว็บไซต์สำเร็จ!');
+        });
+
+        document.getElementById('musicConfigForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await setDoc(homepageRef, {
+                musicTitle: document.getElementById('cfgMusicTitle').value,
+                musicLinkText: document.getElementById('cfgMusicLinkText').value,
+                musicLinkUrl: document.getElementById('cfgMusicLinkUrl').value,
+                musicCoverUrl: document.getElementById('cfgMusicCoverUrl').value
+            }, { merge: true });
+            showToast('🎵 บันทึกการตั้งค่าเพลงสำเร็จ!');
+        });
+
+        const partnerForm = document.getElementById('partnerForm');
+        const partnerTableBody = document.getElementById('adminPartnerTableBody');
+        const savePartnerBtn = document.getElementById('savePartnerBtn');
+        const cancelPartnerEditBtn = document.getElementById('cancelPartnerEditBtn');
+        const editPartnerId = document.getElementById('editPartnerId');
+
+        partnerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const partnerData = {
+                name: document.getElementById('partnerName').value,
+                url: document.getElementById('partnerUrl').value
+            };
+            const id = editPartnerId.value;
+            if (id) {
+                await updateDoc(doc(db, "partners", id), partnerData);
+                showToast('✏️ อัปเดตพาร์ทเนอร์สำเร็จ!');
+                resetPartnerForm();
+            } else {
+                await addDoc(collection(db, "partners"), partnerData);
+                showToast('✨ เพิ่มพาร์ทเนอร์ใหม่สำเร็จ!');
+                partnerForm.reset();
+            }
+        });
+
+        onSnapshot(collection(db, "partners"), (snapshot) => {
+            partnerTableBody.innerHTML = '';
+            snapshot.forEach((docSnap) => {
+                const p = docSnap.data();
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${p.name}</strong></td>
+                    <td><a href="${p.url}" target="_blank" style="color:#3399ff;">${p.url}</a></td>
+                    <td style="text-align: right;">
+                        <button class="btn-action btn-edit" onclick="window.editPartner('${docSnap.id}', '${p.name}', '${p.url}')">EDIT</button>
+                        <button class="btn-action btn-del" onclick="window.deletePartner('${docSnap.id}')">DELETE</button>
+                    </td>
+                `;
+                partnerTableBody.appendChild(tr);
+            });
+        });
+
+        window.editPartner = (id, name, url) => {
+            editPartnerId.value = id;
+            document.getElementById('partnerName').value = name;
+            document.getElementById('partnerUrl').value = url;
+            savePartnerBtn.innerText = "UPDATE PARTNER";
+            cancelPartnerEditBtn.style.display = "inline-block";
+        };
+
+        window.deletePartner = async (id) => {
+            if (confirm('ต้องการลบพาร์ทเนอร์นี้ใช่หรือไม่?')) {
+                await deleteDoc(doc(db, "partners", id));
+                showToast('🗑️ ลบพาร์ทเนอร์สำเร็จ');
+            }
+        };
+
+        cancelPartnerEditBtn.addEventListener('click', resetPartnerForm);
+        function resetPartnerForm() {
+            partnerForm.reset(); editPartnerId.value = '';
+            savePartnerBtn.innerText = "ADD NEW PARTNER";
+            cancelPartnerEditBtn.style.display = "none";
+        }
+
+        const memberForm = document.getElementById('memberForm');
+        const tableBody = document.getElementById('adminMemberTableBody');
+        const saveMemberBtn = document.getElementById('saveMemberBtn');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const editMemberId = document.getElementById('editMemberId');
+
+        memberForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const memberData = {
+                name: document.getElementById('memberName').value,
+                role: document.getElementById('memberRole').value,
+                facebookUrl: document.getElementById('memberFb').value,
+                avatar: document.getElementById('memberAvatar').value
+            };
+            const id = editMemberId.value;
+            if (id) { 
+                await updateDoc(doc(db, "members", id), memberData); 
+                showToast('✏️ อัปเดตข้อมูลสมาชิกสำเร็จ!'); 
+                resetMemberForm(); 
+            } else { 
+                await addDoc(collection(db, "members"), memberData); 
+                showToast('✨ เพิ่มสมาชิกใหม่สำเร็จ!'); 
+                memberForm.reset(); 
+            }
+        });
+
+        onSnapshot(collection(db, "members"), (snapshot) => {
+            tableBody.innerHTML = '';
+            snapshot.forEach((docSnap) => {
+                const m = docSnap.data();
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><img src="${m.avatar || 'https://placehold.co/50'}" style="width:35px;height:35px;border-radius:6px;object-fit:cover;"></td>
+                    <td><strong>${m.name}</strong></td>
+                    <td><span style="color:#fff;">${m.role}</span></td>
+                    <td><a href="${m.facebookUrl || '#'}" target="_blank" style="color:#3399ff;">Link</a></td>
+                    <td style="text-align: right;">
+                        <button class="btn-action btn-edit" onclick="window.editMember('${docSnap.id}', '${m.name}', '${m.role}', '${m.facebookUrl || ''}', '${m.avatar || ''}')">EDIT</button>
+                        <button class="btn-action btn-del" onclick="window.deleteMember('${docSnap.id}')">DELETE</button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        });
+
+        window.editMember = (id, name, role, fb, avatar) => {
+            editMemberId.value = id;
+            document.getElementById('memberName').value = name;
+            document.getElementById('memberRole').value = role;
+            document.getElementById('memberFb').value = fb;
+            document.getElementById('memberAvatar').value = avatar;
+            saveMemberBtn.innerText = "UPDATE MEMBER";
+            cancelEditBtn.style.display = "inline-block";
+            window.scrollTo({ top: 800, behavior: 'smooth' });
+        };
+
+        window.deleteMember = async (id) => {
+            if (confirm('ต้องการลบสมาชิกนี้ใช่หรือไม่?')) {
+                await deleteDoc(doc(db, "members", id));
+                showToast('🗑️ ลบสมาชิกสำเร็จ');
+            }
+        };
+
+        cancelEditBtn.addEventListener('click', resetMemberForm);
+        function resetMemberForm() {
+            memberForm.reset(); editMemberId.value = '';
+            saveMemberBtn.innerText = "ADD NEW MEMBER";
+            cancelEditBtn.style.display = "none";
+        }
+    </script>
+</body>
+</html>
