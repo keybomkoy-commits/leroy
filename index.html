@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LEROY BY YUKINA</title>
+    <link rel="icon" id="siteFavicon" href="">
+    
+    <!-- นำเข้าฟอนต์ -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ป้องกันการคลุมดำ ป้องกันเคอร์เซอร์พิมพ์ข้อความ และป้องกันการลากสิ่งของในหน้าเว็บ */
+        * {
+            -webkit-user-select: none; /* Safari, Chrome */
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* IE, Edge */
+            user-select: none; /* มาตรฐาน */
+            -webkit-user-drag: none; /* ป้องกันการลากรูปภาพ */
+        }
+
+        /* อนุญาตให้กดลากแถบเสียงเพลงได้ตามปกติ */
+        input[type="range"] {
+            -webkit-user-select: auto;
+            user-select: auto;
+        }
+
+        /* เอฟเฟกต์รีเฟรชหน้าเว็บให้เฟดเข้ามาอย่างสมูทนุ่มนวล */
+        @keyframes pageFadeIn {
+            0% { opacity: 0; filter: blur(8px); transform: scale(1.02); }
+            100% { opacity: 1; filter: blur(0); transform: scale(1); }
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh; 
+            min-height: 100dvh; 
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            overflow-x: hidden; 
+            overflow-y: auto; 
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+            animation: pageFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            cursor: default; /* บังคับให้เคอร์เซอร์เป็นลูกศรปกติเสมอ */
+        }
+
+        /* เลเยอร์พื้นหลัง */
+        #bg-image {
+            position: fixed; 
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 0;
+            animation: bgZoom 40s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate;
+            filter: grayscale(100%);
+        }
+
+        @keyframes bgZoom {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+
+        .bg-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.90);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        #particleCanvas {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* กรอบเนื้อหาหลัก */
+        .main-content {
+            position: relative;
+            z-index: 3;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 60px 20px 140px 20px; 
+            box-sizing: border-box;
+            gap: 25px; 
+            min-height: fit-content;
+        }
+
+        .header-section {
+            text-align: center;
+            width: 100%;
+        }
+
+        .main-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: clamp(3rem, 10vw, 7.5rem); 
+            letter-spacing: 0.2em;
+            margin: 0;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: transparent;
+            -webkit-text-stroke: 2px rgba(255, 255, 255, 0.7);
+            animation: textBWFlicker 6s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+            word-wrap: break-word; 
+            cursor: default;
+        }
+
+        @keyframes textBWFlicker {
+            0%, 20% { 
+                color: transparent; 
+                -webkit-text-stroke: 2px rgba(255, 255, 255, 0.4);
+                text-shadow: none;
+            }
+            50%, 100% { 
+                color: #ffffff; 
+                -webkit-text-stroke: 0px transparent;
+                text-shadow: 0 0 40px rgba(255, 255, 255, 0.8), 0 5px 25px rgba(0, 0, 0, 0.95);
+            }
+        }
+
+        .sub-title {
+            font-size: clamp(0.6rem, 2.5vw, 0.8rem);
+            margin-top: 10px;
+            color: #888888;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.4em;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95);
+            cursor: default;
+        }
+
+        .glass-box-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            animation: floating 8s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .glass-box {
+            background: rgba(15, 15, 15, 0.82);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 560px;
+            min-height: 160px; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .glass-box:hover {
+            background: rgba(25, 25, 25, 0.92);
+            border-color: rgba(255, 255, 255, 0.35);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95), 0 0 35px rgba(255, 255, 255, 0.15);
+            transform: translateY(-3px);
+        }
+
+        .main-logo {
+            max-height: 95px;
+            max-width: 100%;
+            object-fit: contain;
+            display: none; 
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            filter: drop-shadow(0 5px 20px rgba(255,255,255,0.3)) grayscale(100%);
+        }
+        
+        .glass-box:hover .main-logo {
+            transform: scale(1.06);
+            filter: drop-shadow(0 8px 30px rgba(255,255,255,0.6)) grayscale(100%);
+        }
+
+        .nav-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            width: 100%;
+            max-width: 780px;
+        }
+           
+        .btn-main {
+            position: relative;
+            text-decoration: none;
+            width: 100%;
+            max-width: 320px;
+            padding: 22px 15px;
+            box-sizing: border-box;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(10, 10, 10, 0.85) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+            backdrop-filter: blur(15px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            overflow: hidden;
+            clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-main::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 80%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: skewX(-30deg);
+            transition: left 0.6s ease;
+            z-index: -1;
+        }
+
+        .btn-main .btn-sub {
+            font-size: 0.5rem;
+            color: #888888;
+            letter-spacing: 0.4em;
+            margin-top: 8px;
+            font-weight: 700;
+            transition: all 0.4s ease;
+        }
+
+        .btn-main:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #ffffff;
+            color: #ffffff;
+            transform: translateY(-3px) scale(1.02);
+            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.4)); 
+            text-shadow: 0 0 10px #ffffff;
+        }
+
+        .btn-main:hover::before { left: 150%; transition: left 0.7s ease-in-out; }
+        .btn-main:hover .btn-sub { color: #ffffff; text-shadow: 0 0 10px #ffffff; }
+
+        .btn-main::after {
+            content: 'SYS.ON //';
+            position: absolute;
+            bottom: 4px; right: 8px;
+            font-size: 0.4rem;
+            color: rgba(255, 255, 255, 0.3);
+            letter-spacing: 1px;
+            font-weight: 800;
+        }
+
+        .partner-container {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+            max-width: 720px;
+            justify-content: center;
+            flex-wrap: wrap; 
+        }
+
+        .btn-partner {
+            position: relative;
+            text-decoration: none;
+            flex: 1;
+            min-width: 130px; 
+            padding: 14px 8px;
+            box-sizing: border-box;
+            background: rgba(15, 15, 15, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 3px solid rgba(255, 255, 255, 0.3); 
+            border-radius: 0 4px 4px 0;
+            color: #999999;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 0.7rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-partner .btn-sub {
+            font-size: 0.42rem;
+            color: #555555;
+            letter-spacing: 0.25em;
+            margin-top: 5px;
+            font-weight: 600;
+            transition: color 0.4s ease;
+        }
+
+        .btn-partner:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.4);
+            border-left: 4px solid #ffffff;
+            color: #ffffff;
+            transform: translateX(4px);
+            box-shadow: inset 30px 0 30px -20px rgba(255, 255, 255, 0.15), 0 5px 15px rgba(0,0,0,0.5);
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+        }
+
+        .btn-partner:hover .btn-sub { color: #cccccc; }
+
+        .btn-contact {
+            margin-top: 10px;
+            padding: 14px 32px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0; 
+            color: #ffffff;
+            font-size: 0.7rem;
+            text-decoration: none;
+            letter-spacing: 0.2em;
+            font-weight: 700;
+            text-transform: uppercase;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            position: relative;
+        }
+
+        .btn-contact::before, .btn-contact::after {
+            content: '';
+            position: absolute;
+            width: 10px; height: 10px;
+            border: 2px solid #ffffff;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .btn-contact::before { top: -2px; left: -2px; border-right: none; border-bottom: none; }
+        .btn-contact::after { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+
+        .btn-contact:hover {
+            background: #ffffff;
+            color: #000000;
+            border-color: #ffffff;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.5);
+            font-weight: 800;
+        }
+
+        .btn-contact:hover::before { top: 4px; left: 4px; border-color: #000; }
+        .btn-contact:hover::after { bottom: 4px; right: 4px; border-color: #000; }
+
+        .footer-credit {
+            position: relative;
+            z-index: 3;
+            width: 100%;
+            text-align: center;
+            padding: 16px 20px 20px 20px;
+            box-sizing: border-box;
+            font-size: 0.55rem;
+            color: #666666;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            font-weight: 600;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: auto; 
+            background: rgba(10, 10, 10, 0.9);
+            cursor: default;
+        }
+
+        /* Music Widget */
+        .music-widget {
+            position: fixed; 
+            bottom: 30px; 
+            right: 30px;
+            background: rgba(12, 12, 12, 0.9); backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.15); 
+            border-radius: 14px;
+            width: 290px; 
+            z-index: 99; 
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 25px rgba(255, 255, 255, 0.05);
+        }
+        
+        .music-widget.collapsed { height: 66px; }
+        .music-widget.expanded { height: 125px; }
+
+        .music-header { display: flex; align-items: center; padding: 10px 14px; height: 66px; box-sizing: border-box; cursor: pointer; position: relative; }
+        .cover-wrapper { position: relative; width: 42px; height: 42px; margin-right: 12px; flex-shrink: 0; }
+        .music-cover { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 1.5px solid rgba(255, 255, 255, 0.2); animation: spinRecord 5s linear infinite; animation-play-state: paused; filter: grayscale(100%); }
+        .playing .music-cover { animation-play-state: running; border-color: #ffffff; }
+        .cover-glow { position: absolute; inset: -3px; border-radius: 50%; background: radial-gradient(circle, #ffffff, transparent); opacity: 0; transition: opacity 0.4s ease; z-index: -1; filter: blur(6px); }
+        .playing .cover-glow { opacity: 0.6; animation: pulseGlow 2s infinite alternate; }
+        @keyframes spinRecord { 100% { transform: rotate(360deg); } }
+        @keyframes pulseGlow { 0% { opacity: 0.2; } 100% { opacity: 0.6; } }
+
+        .music-info-mini { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .music-label { font-size: 0.45rem; color: #aaaaaa; letter-spacing: 0.25em; font-weight: 700; text-shadow: 0 0 8px rgba(255,255,255,0.2); cursor: default; }
+        .music-title { font-family: 'Oswald', sans-serif; font-size: 0.85rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; margin-top: 2px; letter-spacing: 0.05em; cursor: default; }
+        .music-link { font-size: 0.48rem; color: #777777; text-decoration: none; letter-spacing: 0.15em; margin-top: 1px; transition: color 0.3s ease; font-weight: 600; cursor: pointer; }
+        .music-link:hover { color: #ffffff; text-shadow: 0 0 5px #ffffff; }
+        .toggle-icon { font-size: 0.6rem; color: #ffffff; padding: 5px; transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+
+        .music-controls { display: flex; align-items: center; padding: 0 16px 14px 16px; gap: 14px; opacity: 0; transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.4); }
+        .music-widget.expanded .music-controls { opacity: 1; }
+
+        .ctrl-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.2); color: #ffffff; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 12px rgba(255, 255, 255, 0.05); }
+        .vol-wrapper { flex: 1; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
+        .vol-icon { font-size: 0.5rem; color: #888; letter-spacing: 0.1em; font-weight: 700; cursor: default; }
+        .vol-slider { flex: 1; -webkit-appearance: none; height: 3px; background: rgba(255,255,255,0.2); border-radius: 2px; outline: none; cursor: pointer; transition: background 0.3s ease; }
+        .vol-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 10px; height: 10px; border-radius: 3px; background: #ffffff; cursor: pointer; box-shadow: 0 0 10px #ffffff; transition: transform 0.2s ease; }
+
+        @keyframes fadeUpIn { 0% { opacity: 0; transform: translateY(25px); filter: blur(4px); } 100% { opacity: 1; transform: translateY(0); filter: blur(0); } }
+        .anim-item { opacity: 0; animation: fadeUpIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .delay-1 { animation-delay: 0.1s; } .delay-2 { animation-delay: 0.2s; } .delay-3 { animation-delay: 0.3s; } .delay-4 { animation-delay: 0.4s; }
+        
+        @media (max-width: 768px) {
+            .partner-container {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                width: 100%;
+                gap: 12px;
+            }
+            .btn-partner { width: 100%; max-width: 100%; }
+            .glass-box { padding: 15px; min-height: 120px; }
+            .btn-main { max-width: 100%; padding: 18px 10px; }
+            .main-content { gap: 20px; padding: 40px 15px 120px 15px; }
+            .music-widget { bottom: 15px; right: 15px; width: calc(100% - 30px); max-width: 320px; }
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+    <div id="bg-image"></div>
+    <div class="bg-overlay"></div>
+    <canvas id="particleCanvas"></canvas>
+
+    <main class="main-content">
+        <header class="header-section anim-item delay-1">
+            <h1 id="dynMainTitle" class="main-title">loading...</h1>
+            <p id="dynSubTitle" class="sub-title"> </p>
+        </header>
+
+        <div class="glass-box-container anim-item delay-2">
+            <div class="glass-box">
+                <img id="mainLogo" src="" alt="Main Logo" class="main-logo">
+            </div>
+        </div>
+        
+        <div class="nav-wrapper anim-item delay-3">
+            <a href="member.html" id="btnMid" class="btn-main">
+                <span id="txtMid">MEMBER</span>
+                <span class="btn-sub">EXCLUSIVE</span>
+            </a>
+
+            <div class="partner-container">
+                <a href="#" id="btnFarLeft" class="btn-partner" target="_blank">
+                    <span id="txtFarLeft">PARTNER</span>
+                    <span class="btn-sub">ZONE</span>
+                </a>
+                <a href="#" id="btnLeft" class="btn-partner" target="_blank">
+                    <span id="txtLeft">PARTNER</span>
+                    <span class="btn-sub">ZONE</span>
+                </a>
+                <a href="#" id="btnRight" class="btn-partner" target="_blank">
+                    <span id="txtRight">PARTNER</span>
+                    <span class="btn-sub">ZONE</span>
+                </a>
+                <a href="#" id="btnFarRight" class="btn-partner" target="_blank">
+                    <span id="txtFarRight">PARTNER</span>
+                    <span class="btn-sub">ZONE</span>
+                </a>
+            </div>
+        </div>
+
+        <a href="https://qaqenqcstudio.vercel.app/" target="_blank" class="btn-contact anim-item delay-4">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.9;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            ติดต่อจ้างทำเว็บไซต์
+        </a>
+    </main>
+
+    <!-- Music Widget -->
+    <div id="musicWidget" class="music-widget collapsed anim-item delay-4">
+        <div class="music-header" id="toggleMusicBtn">
+            <div class="cover-wrapper">
+                <img id="musicCover" class="music-cover" src="https://placehold.co/100x100/111/444?text=🎵" alt="Cover">
+                <div class="cover-glow"></div>
+            </div>
+            <div class="music-info-mini">
+                <span class="music-label">AUDIO STREAM // LIVE</span>
+                <div id="musicTitle" class="music-title">Unknown Track</div>
+                <a id="musicLink" class="music-link" href="#" target="_blank">SOURCE LINK</a>
+            </div>
+            <div id="toggleIcon" class="toggle-icon">▲</div>
+        </div>
+        <div class="music-controls">
+            <button id="playPauseBtn" class="ctrl-btn">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </button>
+            <div class="vol-wrapper">
+                <span class="vol-icon">VOL</span>
+                <input type="range" id="volumeSlider" class="vol-slider" min="0" max="1" step="0.01" value="0.5">
+            </div>
+        </div>
+        <audio id="bgMusic" loop>
+            <source src="music.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+
+    <footer class="footer-credit">
+        SYSTEM DESIGN BY QA QEN
+        <span style="opacity: 0.4; margin: 0 10px;">|</span> 
+        <a href="" style="color: #666; text-decoration: none; transition: 0.3s ease; font-weight: 600;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#666'">ADMIN</a>
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let particlesArray = [];
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class DustStorm {
+            constructor() {
+                this.reset();
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+            }
+            
+            reset() {
+                // ให้ฝุ่นเริ่มจากนอกจอฝั่งซ้าย กระจายตัวในแนวตั้ง
+                this.x = -Math.random() * 300; 
+                this.y = Math.random() * canvas.height;
+                
+                // ขนาดเล็กมากๆ เหมือนฝุ่นผง
+                this.size = Math.random() * 1.5 + 0.2;
+                
+                // พายุพัดแรงจากซ้ายไปขวา
+                this.speedX = Math.random() * 12 + 8; 
+                // กระจายตัวขึ้นลงแบบสุ่ม
+                this.speedY = (Math.random() * 4) - 2;
+                
+                // ฝุ่นต้องดูจางๆ บางจุดทึบ บางจุดใส
+                this.opacity = Math.random() * 0.4 + 0.1; 
+                
+                // ตัวแปรสร้างความปั่นป่วนของแรงลม (Turbulence)
+                this.wobble = Math.random() * Math.PI * 2;
+                this.wobbleSpeed = Math.random() * 0.1 + 0.05; 
+            }
+            
+            update() {
+                // พายุจะพัดพาวนๆ กระชากขึ้นลง
+                this.wobble += this.wobbleSpeed;
+                let windGust = Math.sin(this.wobble) * 2;
+
+                this.x += this.speedX;
+                this.y += this.speedY + windGust;
+
+                // ถ้านอกกรอบจอ ให้กลับไปเริ่มใหม่
+                if (this.x > canvas.width + 50 || this.y < -50 || this.y > canvas.height + 50) {
+                    this.reset();
+                }
+            }
+            
+            draw() {
+                // วาดฝุ่นเป็นเส้นสั้นๆ (Motion Blur) เพื่อเน้นว่าพายุพัดเร็วมาก
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x - (this.speedX * 0.4), this.y - (this.speedY * 0.4)); 
+                ctx.strokeStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.lineWidth = this.size;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+            }
+        }
+
+        function initParticles() {
+            particlesArray = [];
+            // เพิ่มความหนาแน่นของอนุภาคให้เยอะขึ้น เพื่อสร้างฟีลพายุฝุ่น
+            let numberOfParticles = (canvas.width * canvas.height) / 2000; 
+            for (let i = 0; i < numberOfParticles; i++) {
+                particlesArray.push(new DustStorm());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+                particlesArray[i].draw();
+            }
+            requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBnnXlk6OXkwG-c2PqFeRal_YS4CxEO3qs",
+            authDomain: "leroy-85ae4.firebaseapp.com",
+            projectId: "leroy-85ae4",
+            storageBucket: "leroy-85ae4.firebasestorage.app",
+            messagingSenderId: "671645162081",
+            appId: "1:671645162081:web:68e1992613aa29dd94a820",
+        };
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+
+            const elements = {
+                txtFarLeft: document.getElementById('txtFarLeft'), txtLeft: document.getElementById('txtLeft'),
+                txtMid: document.getElementById('txtMid'), txtRight: document.getElementById('txtRight'),
+                txtFarRight: document.getElementById('txtFarRight'), btnFarLeft: document.getElementById('btnFarLeft'),
+                btnLeft: document.getElementById('btnLeft'), btnMid: document.getElementById('btnMid'),
+                btnRight: document.getElementById('btnRight'), btnFarRight: document.getElementById('btnFarRight'),
+                mainLogo: document.getElementById('mainLogo'), musicTitle: document.getElementById('musicTitle'),
+                musicLink: document.getElementById('musicLink'), musicCover: document.getElementById('musicCover'),
+                dynMainTitle: document.getElementById('dynMainTitle'), dynSubTitle: document.getElementById('dynSubTitle')
+            };
+
+            const audio = document.getElementById('bgMusic');
+            const playPauseBtn = document.getElementById('playPauseBtn');
+            const volumeSlider = document.getElementById('volumeSlider');
+            const musicWidget = document.getElementById('musicWidget');
+            const toggleMusicBtn = document.getElementById('toggleMusicBtn');
+            const toggleIcon = document.getElementById('toggleIcon');
+            let isPlaying = false; audio.volume = 0.5;
+
+            const savedTime = sessionStorage.getItem('musicCurrentTime');
+            const wasPlaying = sessionStorage.getItem('musicIsPlaying');
+            
+            if (savedTime) audio.currentTime = parseFloat(savedTime);
+            
+            if (wasPlaying === 'true') {
+                audio.play().then(() => { 
+                    playPauseBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>'; 
+                    musicWidget.classList.add('playing'); 
+                    isPlaying = true; 
+                }).catch(e => {});
+            }
+
+            window.addEventListener('beforeunload', () => {
+                sessionStorage.setItem('musicCurrentTime', audio.currentTime);
+                sessionStorage.setItem('musicIsPlaying', isPlaying);
+            });
+
+            document.body.addEventListener('click', (e) => {
+                if (!isPlaying && !e.target.closest('#playPauseBtn') && !e.target.closest('.vol-slider')) {
+                    audio.play().then(() => {
+                        playPauseBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+                        musicWidget.classList.add('playing');
+                        isPlaying = true;
+                        sessionStorage.setItem('musicIsPlaying', 'true');
+                    }).catch(e=>{});
+                }
+            });
+
+            playPauseBtn.addEventListener('click', () => {
+                if (isPlaying) { 
+                    audio.pause(); playPauseBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'; musicWidget.classList.remove('playing'); 
+                    sessionStorage.setItem('musicIsPlaying', 'false');
+                }
+                else { 
+                    audio.play().then(() => { 
+                        playPauseBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>'; musicWidget.classList.add('playing'); 
+                        sessionStorage.setItem('musicIsPlaying', 'true');
+                    }).catch(e=>{}); 
+                }
+                isPlaying = !isPlaying;
+            });
+            volumeSlider.addEventListener('input', (e) => { audio.volume = e.target.value; });
+            toggleMusicBtn.addEventListener('click', (e) => {
+                if(e.target.tagName.toLowerCase() === 'a') return;
+                if (musicWidget.classList.contains('collapsed')) {
+                    musicWidget.classList.replace('collapsed', 'expanded'); toggleIcon.style.transform = 'rotate(180deg)';
+                } else {
+                    musicWidget.classList.replace('expanded', 'collapsed'); toggleIcon.style.transform = 'rotate(0deg)';
+                }
+            });
+
+            onSnapshot(doc(db, "settings", "homepage"), (docSnap) => {
+                if (docSnap.exists()) {
+                    const config = docSnap.data();
+                    
+                    if (config.bgUrl) { document.getElementById('bg-image').style.backgroundImage = `url('${config.bgUrl}')`; }
+                    if (config.faviconUrl) {
+                        const favEl = document.getElementById('siteFavicon');
+                        if (favEl) favEl.href = config.faviconUrl;
+                    }
+                    
+                    if (config.mainTitle) elements.dynMainTitle.innerText = config.mainTitle;
+                    if (config.subTitle) elements.dynSubTitle.innerText = config.subTitle;
+
+                    if (config.logoUrl) { elements.mainLogo.src = config.logoUrl; elements.mainLogo.style.display = 'block'; }
+                    else { elements.mainLogo.style.display = 'none'; }
+
+                    if(config.farLeftBtnText) elements.txtFarLeft.innerText = config.farLeftBtnText;
+                    if(config.leftBtnText) elements.txtLeft.innerText = config.leftBtnText;
+                    if(config.rightBtnText) elements.txtRight.innerText = config.rightBtnText;
+                    if(config.farRightBtnText) elements.txtFarRight.innerText = config.farRightBtnText;
+
+                    if(config.farLeftBtnUrl) elements.btnFarLeft.href = config.farLeftBtnUrl;
+                    if(config.leftBtnUrl) elements.btnLeft.href = config.leftBtnUrl;
+                    if(config.rightBtnUrl) elements.btnRight.href = config.rightBtnUrl;
+                    if(config.farRightBtnUrl) elements.btnFarRight.href = config.farRightBtnUrl;
+                    
+                    if(config.musicTitle) elements.musicTitle.innerText = config.musicTitle;
+                    if(config.musicLinkText) elements.musicLink.innerText = config.musicLinkText;
+                    if(config.musicLinkUrl) elements.musicLink.href = config.musicLinkUrl;
+                    if(config.musicCoverUrl) elements.musicCover.src = config.musicCoverUrl;
+                }
+            }, (error) => { console.warn("รอการเชื่อมต่อ Firebase"); });
+        } catch (error) { console.error("Firebase Error:", error); }
+    </script>
+</body>
+</html>

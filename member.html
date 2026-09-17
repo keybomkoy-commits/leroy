@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LEROY BY YUKINA</title>
+    <link rel="icon" id="siteFavicon" href="">
+    
+    <!-- นำเข้าฟอนต์ -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ป้องกันการคลุมดำ ป้องกันเคอร์เซอร์พิมพ์ข้อความ และป้องกันการลากสิ่งของในหน้าเว็บ */
+        * {
+            -webkit-user-select: none; -moz-user-select: none;
+            -ms-user-select: none; user-select: none;
+            -webkit-user-drag: none;
+        }
+        input[type="text"], input[type="range"] {
+            -webkit-user-select: auto; user-select: auto;
+        }
+
+        :root {
+            --bg-deep: #000000;
+            --panel-bg: rgba(10, 10, 10, 0.75);
+            --panel-border: rgba(255, 255, 255, 0.15);
+        }
+
+        @keyframes pageFadeIn {
+            0% { opacity: 0; filter: blur(8px); transform: scale(1.02); }
+            100% { opacity: 1; filter: blur(0); transform: scale(1); }
+        }
+
+        body {
+            margin: 0; padding: 0; min-height: 100vh; min-height: 100dvh;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-deep); color: #ffffff;
+            overflow-x: hidden; overflow-y: auto; display: flex; flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+            animation: pageFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            cursor: default;
+        }
+
+        #bg-image {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url('https://placehold.co/1920x1080/111/111');
+            background-size: cover; background-position: center;
+            z-index: 0; animation: bgZoom 35s ease-in-out infinite alternate;
+            filter: grayscale(100%);
+        }
+        @keyframes bgZoom { 0% { transform: scale(1); } 100% { transform: scale(1.12); } }
+
+        .bg-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.90);
+            z-index: 1; pointer-events: none;
+        }
+
+        #particleCanvas {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 2; pointer-events: none;
+        }
+
+        .container {
+            position: relative; z-index: 3;
+            max-width: 1250px; margin: 0 auto; padding: 50px 20px 130px;
+            width: 100%; box-sizing: border-box; flex: 1;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        /* Top Navigation & Header */
+        .top-nav {
+            display: flex; justify-content: center; align-items: center;
+            width: 100%; position: relative; margin-bottom: 45px;
+        }
+
+        /* ปุ่ม BACK TO HUB ขาวดำล้ำๆ */
+        .btn-back {
+            position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+            text-decoration: none; color: #fff; font-weight: 700;
+            font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase;
+            padding: 12px 24px; border: 1px solid rgba(255,255,255,0.2);
+            background: transparent;
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex; align-items: center; gap: 8px;
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.05);
+        }
+        .btn-back:hover { 
+            background: #ffffff; color: #000; 
+            box-shadow: 0 0 20px rgba(255,255,255,0.5);
+            transform: translateY(-50%) translateY(-2px);
+        }
+
+        .header-title-box { display: flex; flex-direction: column; align-items: center; text-align: center; }
+        
+        .page-title {
+            font-family: 'Oswald', sans-serif; font-size: clamp(2.5rem, 6vw, 4rem); 
+            letter-spacing: 0.25em; margin: 0; font-weight: 700;
+            text-transform: uppercase; color: transparent;
+            -webkit-text-stroke: 2px rgba(255, 255, 255, 0.7);
+            animation: textBWFlicker 6s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+        }
+        @keyframes textBWFlicker {
+            0%, 20% { color: transparent; -webkit-text-stroke: 2px rgba(255, 255, 255, 0.4); text-shadow: none; }
+            50%, 100% { color: #ffffff; -webkit-text-stroke: 0px transparent; text-shadow: 0 0 40px rgba(255, 255, 255, 0.8), 0 5px 25px rgba(0, 0, 0, 0.95); }
+        }
+
+        .page-subtitle {
+            font-size: 0.75rem; color: #888; letter-spacing: 0.6em;
+            margin-top: 12px; text-transform: uppercase; font-weight: 600;
+        }
+
+        /* Search Box แบบ HUD */
+        .search-container { width: 100%; margin-bottom: 60px; display: flex; justify-content: center; }
+        .search-box { width: 100%; max-width: 580px; position: relative; display: flex; align-items: center; }
+        .search-icon {
+            position: absolute; left: 20px; width: 16px; height: 16px; fill: #666;
+            pointer-events: none; transition: fill 0.3s ease;
+        }
+        .search-box input {
+            width: 100%; padding: 18px 20px 18px 50px; box-sizing: border-box;
+            background: rgba(10, 10, 10, 0.75); border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 0; /* เหลี่ยมคม */
+            color: #fff; font-family: 'Inter', sans-serif;
+            font-size: 0.9rem; font-weight: 500; outline: none; 
+            backdrop-filter: blur(20px);
+            transition: all 0.4s ease; 
+            letter-spacing: 0.2em; text-transform: uppercase;
+        }
+        .search-box input::placeholder { color: #555; font-weight: 400; transition: color 0.3s; }
+        .search-box input:hover { border-color: rgba(255,255,255,0.4); background: rgba(15, 15, 15, 0.85); }
+        .search-box input:focus {
+            background: rgba(20, 20, 20, 0.95); border-color: #fff;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 20px rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+        .search-box input:focus::placeholder { color: #888; }
+        .search-box input:focus ~ .search-icon { fill: #fff; }
+
+        /* การจัดหมวดหมู่ */
+        .category-section { width: 100%; margin-bottom: 60px; display: none; }
+        .category-section.has-data { display: block; }
+
+        .category-title {
+            font-family: 'Oswald', sans-serif; font-size: 1.5rem; letter-spacing: 0.3em;
+            margin-bottom: 30px; text-transform: uppercase; font-weight: 700;
+            display: flex; align-items: center; gap: 12px; color: #fff;
+        }
+        .category-title::before {
+            content: ''; display: inline-block; width: 4px; height: 22px; 
+            background-color: #fff; box-shadow: 0 0 10px #fff;
+        }
+        .cat-count { font-size: 0.85rem; color: #666; font-weight: 400; margin-left: 5px; }
+
+        .member-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px; justify-content: center; width: 100%;
+        }
+
+        .smooth-fade { animation: smoothFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes smoothFadeIn { 0% { opacity: 0; transform: translateY(20px); filter: blur(5px); } 100% { opacity: 1; transform: translateY(0); filter: blur(0); } }
+
+        /* ====================================================
+           ดีไซน์การ์ดสมาชิกใหม่ (Sci-Fi Data Card)
+           ==================================================== */
+        .member-card {
+            background-color: var(--panel-bg);
+            /* ลายตารางเทคโนโลยีบางๆ */
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 15px 15px;
+            border: 1px solid var(--panel-border); 
+            border-radius: 0; /* ทรงเหลี่ยม */
+            padding: 20px; display: flex; align-items: center; gap: 18px;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
+            position: relative; overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            cursor: pointer;
+        }
+
+        /* Brackets (กรอบเล็งเป้า) */
+        .corner-tl, .corner-br {
+            position: absolute; width: 15px; height: 15px; border: 2px solid #555;
+            transition: all 0.5s ease; pointer-events: none; z-index: 5;
+        }
+        .corner-tl { top: 0; left: 0; border-right: none; border-bottom: none; }
+        .corner-br { bottom: 0; right: 0; border-left: none; border-top: none; }
+
+        /* Scanner Line Animation */
+        .scan-line {
+            position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+            transform: skewX(-30deg); transition: none; z-index: 1; pointer-events: none;
+        }
+
+        .member-card:hover {
+            background-color: rgba(20, 20, 20, 0.9);
+            border-color: rgba(255, 255, 255, 0.4); 
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 20px rgba(255,255,255,0.1);
+        }
+        .member-card:hover .corner-tl { top: 4px; left: 4px; border-color: #fff; box-shadow: -2px -2px 10px rgba(255,255,255,0.5); }
+        .member-card:hover .corner-br { bottom: 4px; right: 4px; border-color: #fff; box-shadow: 2px 2px 10px rgba(255,255,255,0.5); }
+        .member-card:hover .scan-line { left: 200%; transition: left 0.8s ease-in-out; }
+
+        /* Avatar */
+        .avatar-container { position: relative; flex-shrink: 0; z-index: 2; }
+        .member-avatar {
+            width: 75px; height: 75px; border-radius: 0; /* ทรงเหลี่ยม */
+            background-color: #1a1a1a; object-fit: cover;
+            border: 1px solid rgba(255,255,255,0.2); 
+            filter: grayscale(100%) contrast(1.2); /* ขาวดำเข้มๆ */
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        /* รูปกลับมามีสีเมื่อ Hover */
+        .member-card:hover .member-avatar { 
+            transform: scale(1.05); 
+            filter: grayscale(0%) contrast(1); 
+            border-color: #fff;
+            box-shadow: 0 0 15px rgba(255,255,255,0.3);
+        }
+
+        /* Status Dot แบบจุดเรืองแสงดิจิตอล */
+        .status-dot {
+            position: absolute; bottom: -4px; right: -4px;
+            width: 10px; height: 10px; background-color: #fff;
+            border: 2px solid #000;
+            box-shadow: 0 0 8px #fff;
+            animation: pulseBlink 2s infinite alternate;
+        }
+        @keyframes pulseBlink { 0% { opacity: 0.5; box-shadow: 0 0 2px #fff; } 100% { opacity: 1; box-shadow: 0 0 12px #fff; } }
+
+        .member-info { 
+            flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; 
+            padding-right: 80px; z-index: 2;
+        }
+        
+        .member-role {
+            font-size: 0.55rem; letter-spacing: 0.3em; text-transform: uppercase; 
+            margin: 0 0 6px 0; font-weight: 700; color: #888;
+        }
+        .member-card:hover .member-role { color: #ccc; }
+
+        .member-name {
+            font-size: 1.05rem; font-weight: 700; margin: 0;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            letter-spacing: 0.1em; font-family: 'Oswald', sans-serif;
+            color: #ddd; transition: color 0.3s;
+        }
+        .member-card:hover .member-name { color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+
+        /* ปุ่ม Profile สไตล์ ACCESS แบบล้ำๆ */
+        .fb-btn {
+            position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 8px 14px; border: 1px solid rgba(255,255,255,0.2);
+            background: transparent; color: #fff; border-radius: 0;
+            font-size: 0.6rem; font-weight: 700; text-decoration: none;
+            letter-spacing: 0.2em; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 10;
+        }
+        .fb-btn:hover { 
+            background: #fff; color: #000; 
+            box-shadow: 0 0 20px rgba(255,255,255,0.6);
+            transform: translateY(-50%) scale(1.05);
+        }
+        .fb-icon { width: 12px; height: 12px; margin-right: 6px; fill: currentColor; }
+
+        /* Pagination ขาวดำล้ำๆ */
+        .pagination-container {
+            display: flex; justify-content: center; align-items: center;
+            gap: 12px; margin-top: 70px; width: 100%; flex-wrap: wrap;
+        }
+        .page-btn, .page-arrow {
+            background: rgba(10, 10, 10, 0.8); border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #888; width: 48px; height: 48px; border-radius: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Oswald', sans-serif; font-size: 1.1rem; cursor: pointer;
+            transition: all 0.3s ease; backdrop-filter: blur(12px);
+        }
+        .page-btn:hover, .page-arrow:hover:not(:disabled) { 
+            background: rgba(255, 255, 255, 0.1); color: #fff; border-color: #fff; 
+            transform: translateY(-3px); box-shadow: 0 5px 15px rgba(255,255,255,0.2);
+        }
+        .page-btn.active {
+            background: #fff; color: #000; border-color: #fff;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.6); font-weight: 700;
+        }
+        .page-arrow:disabled { opacity: 0.2; cursor: not-allowed; }
+
+        .no-results {
+            text-align: center; color: #555; padding: 40px; font-weight: 500;
+            font-size: 1rem; letter-spacing: 0.3em; display: none; text-transform: uppercase;
+        }
+
+        /* Music Widget สไตล์ B&W HUD */
+        .music-widget {
+            position: fixed; bottom: 30px; right: 30px;
+            background: rgba(12, 12, 12, 0.9); backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.15); 
+            border-radius: 14px;
+            width: 290px; z-index: 99; 
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden; display: flex; flex-direction: column;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 25px rgba(255, 255, 255, 0.05);
+        }
+        .music-widget:hover { 
+            background: rgba(20, 20, 20, 0.98); border-color: rgba(255, 255, 255, 0.4); 
+            box-shadow: 0 25px 60px rgba(0,0,0,0.95), 0 0 40px rgba(255, 255, 255, 0.15); 
+            transform: translateY(-3px);
+        }
+        .music-widget.collapsed { height: 66px; }
+        .music-widget.expanded { height: 125px; }
+
+        .music-header { display: flex; align-items: center; padding: 10px 14px; height: 66px; box-sizing: border-box; cursor: pointer; position: relative; }
+        .cover-wrapper { position: relative; width: 42px; height: 42px; margin-right: 12px; flex-shrink: 0; }
+        .music-cover { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 1.5px solid rgba(255, 255, 255, 0.2); animation: spinRecord 5s linear infinite; animation-play-state: paused; filter: grayscale(100%); }
+        .playing .music-cover { animation-play-state: running; border-color: #ffffff; }
+        .cover-glow { position: absolute; inset: -3px; border-radius: 50%; background: radial-gradient(circle, #ffffff, transparent); opacity: 0; transition: opacity 0.4s ease; z-index: -1; filter: blur(6px); }
+        .playing .cover-glow { opacity: 0.6; animation: pulseGlow 2s infinite alternate; }
+        @keyframes spinRecord { 100% { transform: rotate(360deg); } }
+        @keyframes pulseGlow { 0% { opacity: 0.2; } 100% { opacity: 0.6; } }
+
+        .music-info-mini { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .music-label { font-size: 0.45rem; color: #aaaaaa; letter-spacing: 0.25em; font-weight: 700; text-shadow: 0 0 8px rgba(255,255,255,0.2); }
+        .music-title { font-family: 'Oswald', sans-serif; font-size: 0.85rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; margin-top: 2px; letter-spacing: 0.05em; }
+        .music-link { font-size: 0.48rem; color: #777777; text-decoration: none; letter-spacing: 0.15em; margin-top: 1px; transition: color 0.3s; font-weight: 600; cursor: pointer; }
+        .music-link:hover { color: #ffffff; text-shadow: 0 0 5px #ffffff; }
+        .toggle-icon { font-size: 0.6rem; color: #ffffff; padding: 5px; transition: transform 0.4s ease; }
+
+        .music-controls { display: flex; align-items: center; padding: 0 16px 14px 16px; gap: 14px; opacity: 0; transition: opacity 0.4s ease 0.1s; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.4); }
+        .music-widget.expanded .music-controls { opacity: 1; }
+
+        .ctrl-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.2); color: #ffffff; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 12px rgba(255, 255, 255, 0.05); }
+        .ctrl-btn:hover { background: #ffffff; color: #000; transform: scale(1.12); box-shadow: 0 0 25px rgba(255, 255, 255, 0.5); }
+        .vol-wrapper { flex: 1; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
+        .vol-icon { font-size: 0.5rem; color: #888; letter-spacing: 0.1em; font-weight: 700; }
+        .vol-slider { flex: 1; -webkit-appearance: none; height: 3px; background: rgba(255,255,255,0.2); border-radius: 2px; outline: none; cursor: pointer; }
+        .vol-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 10px; height: 10px; border-radius: 3px; background: #ffffff; cursor: pointer; box-shadow: 0 0 10px #ffffff; transition: transform 0.2s; }
+        .vol-slider::-webkit-slider-thumb:hover { transform: scale(1.35); }
+        
+        .footer-credit {
+            position: relative; z-index: 3; width: 100%; text-align: center;
+            padding: 16px 20px 20px; box-sizing: border-box; font-size: 0.55rem; color: #666;
+            letter-spacing: 0.3em; text-transform: uppercase; font-weight: 600;
+            border-top: 1px solid rgba(255, 255, 255, 0.05); margin-top: auto; background: rgba(10, 10, 10, 0.9);
+        }
+
+        @media (max-width: 768px) {
+            .page-title { font-size: 2.2rem; }
+            .btn-back { position: static; transform: none; margin-bottom: 25px; padding: 12px 20px; font-size: 0.7rem; }
+            .top-nav { flex-direction: column; }
+            .music-widget { bottom: 15px; right: 15px; width: calc(100% - 30px); max-width: 320px; }
+            .member-grid { grid-template-columns: 1fr; gap: 20px; }
+            .container { padding: 40px 15px 120px; }
+            .fb-btn { position: relative; right: auto; top: auto; transform: none; margin-top: 10px; width: 100%; padding: 12px; box-sizing: border-box; }
+            .member-card { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .member-info { padding-right: 0; }
+            .fb-btn:hover { transform: translateY(-2px); }
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <div id="bg-image"></div>
+    <div class="bg-overlay"></div>
+    <canvas id="particleCanvas"></canvas>
+
+    <div class="container">
+        
+        <!-- Header -->
+        <div class="top-nav anim-item delay-1">
+            <a href="index.html" class="btn-back">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                BACK TO HUB
+            </a>
+            <div class="header-title-box">
+                <h1 id="dynMemberTitle" class="page-title">LEROY BY YUKINA</h1>
+                <div id="dynMemberSubTitle" class="page-subtitle">LEROY BY YUKINA</div>
+            </div>
+        </div>
+
+        <!-- Search Box -->
+        <div class="search-container anim-item delay-2">
+            <div class="search-box">
+                <svg class="search-icon" viewBox="0 0 24 24"><path d="M21.71 20.29l-5.005-5.005C17.79 13.785 18.5 11.977 18.5 10c0-4.694-4.306-8.5-9.5-8.5S-0.5 5.306-0.5 10s4.306 8.5 9.5 8.5c1.977 0 3.785-.71 5.285-1.795l5.005 5.005c.39.39 1.024.39 1.414 0 .39-.39.39-1.024 0-1.414zM9 16c-3.314 0-6-2.686-6-6s2.686-6 6-6 6 2.686 6 6-2.686 6-6 6z"/></svg>
+                <input type="text" id="searchInput" placeholder="SEARCH MEMBER NAME..." autocomplete="off">
+            </div>
+        </div>
+
+        <!-- ไม่พบข้อมูล -->
+        <div id="noResults" class="no-results">-- NO MEMBERS FOUND IN DATABASE --</div>
+
+        <!-- Sections หมวดหมู่ -->
+        <div id="categoryContainer" class="anim-item delay-3" style="width: 100%;">
+            <!-- Categories injected here -->
+        </div>
+
+        <!-- Pagination Container -->
+        <div id="paginationContainer" class="pagination-container anim-item delay-4"></div>
+
+    </div>
+
+    <!-- Music Widget -->
+    <div id="musicWidget" class="music-widget collapsed anim-item delay-4">
+        <div class="music-header" id="toggleMusicBtn">
+            <div class="cover-wrapper">
+                <img id="musicCover" class="music-cover" src="https://placehold.co/100x100/111/444?text=🎵" alt="Cover">
+                <div class="cover-glow"></div>
+            </div>
+            <div class="music-info-mini">
+                <span class="music-label">AUDIO STREAM // LIVE</span>
+                <div id="musicTitle" class="music-title">Unknown Track</div>
+                <a id="musicLink" class="music-link" href="#" target="_blank">SOURCE LINK</a>
+            </div>
+            <div id="toggleIcon" class="toggle-icon">▲</div>
+        </div>
+        <div class="music-controls">
+            <button id="playPauseBtn" class="ctrl-btn">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </button>
+            <div class="vol-wrapper">
+                <span class="vol-icon">VOL</span>
+                <input type="range" id="volumeSlider" class="vol-slider" min="0" max="1" step="0.01" value="0.5">
+            </div>
+        </div>
+        <audio id="bgMusic" loop>
+            <source src="music.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+
+    <footer class="footer-credit">
+        SYSTEM DESIGN BY QA QEN
+        <span style="opacity: 0.3; margin: 0 10px;">|</span> 
+        <a href="" style="color: #666; text-decoration: none; transition: 0.3s; font-weight: 600;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#666'">ADMIN</a>
+    </footer>
+
+    <script>
+        // Particles Background (Dust Storm)
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let particlesArray = [];
+        
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeCanvas); resizeCanvas();
+
+        class DustStorm {
+            constructor() { this.reset(); this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height; }
+            reset() {
+                this.x = -Math.random() * 300; this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 1.5 + 0.2;
+                this.speedX = Math.random() * 12 + 8; this.speedY = (Math.random() * 4) - 2;
+                this.opacity = Math.random() * 0.4 + 0.1; 
+                this.wobble = Math.random() * Math.PI * 2; this.wobbleSpeed = Math.random() * 0.1 + 0.05; 
+            }
+            update() {
+                this.wobble += this.wobbleSpeed; let windGust = Math.sin(this.wobble) * 2;
+                this.x += this.speedX; this.y += this.speedY + windGust;
+                if (this.x > canvas.width + 50 || this.y < -50 || this.y > canvas.height + 50) { this.reset(); }
+            }
+            draw() {
+                ctx.beginPath(); ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x - (this.speedX * 0.4), this.y - (this.speedY * 0.4)); 
+                ctx.strokeStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.lineWidth = this.size; ctx.lineCap = 'round'; ctx.stroke();
+            }
+        }
+        function initParticles() {
+            particlesArray = [];
+            let numberOfParticles = (canvas.width * canvas.height) / 2000; 
+            for (let i = 0; i < numberOfParticles; i++) { particlesArray.push(new DustStorm()); }
+        }
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particlesArray.length; i++) { particlesArray[i].update(); particlesArray[i].draw(); }
+            requestAnimationFrame(animateParticles);
+        }
+        initParticles(); animateParticles();
+
+        // Music Logic
+        const audio = document.getElementById('bgMusic');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const musicWidget = document.getElementById('musicWidget');
+        const toggleMusicBtn = document.getElementById('toggleMusicBtn');
+        const toggleIcon = document.getElementById('toggleIcon');
+        let isPlaying = false; audio.volume = 0.5;
+
+        const savedTime = sessionStorage.getItem('musicCurrentTime');
+        const wasPlaying = sessionStorage.getItem('musicIsPlaying');
+        
+        if (savedTime) audio.currentTime = parseFloat(savedTime);
+        if (wasPlaying === 'true') {
+            audio.play().then(() => { 
+                playPauseBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>'; 
+                musicWidget.classList.add('playing'); isPlaying = true; 
+            }).catch(e=>{});
+        }
+
+        window.addEventListener('beforeunload', () => {
+            sessionStorage.setItem('musicCurrentTime', audio.currentTime);
+            sessionStorage.setItem('musicIsPlaying', isPlaying);
+        });
+
+        document.body.addEventListener('click', (e) => {
+            if (!isPlaying && !e.target.closest('#playPauseBtn') && !e.target.closest('.vol-slider')) {
+                audio.play().then(() => {
+                    playPauseBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+                    musicWidget.classList.add('playing'); isPlaying = true;
+                    sessionStorage.setItem('musicIsPlaying', 'true');
+                }).catch(e=>{});
+            }
+        });
+
+        playPauseBtn.addEventListener('click', () => {
+            if (isPlaying) { 
+                audio.pause(); playPauseBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'; musicWidget.classList.remove('playing');
+                sessionStorage.setItem('musicIsPlaying', 'false');
+            } else { 
+                audio.play().then(() => { 
+                    playPauseBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>'; musicWidget.classList.add('playing'); 
+                    sessionStorage.setItem('musicIsPlaying', 'true');
+                }).catch(e=>{}); 
+            }
+            isPlaying = !isPlaying;
+        });
+        volumeSlider.addEventListener('input', (e) => { audio.volume = e.target.value; });
+        toggleMusicBtn.addEventListener('click', (e) => {
+            if(e.target.tagName.toLowerCase() === 'a') return;
+            if (musicWidget.classList.contains('collapsed')) {
+                musicWidget.classList.replace('collapsed', 'expanded'); toggleIcon.style.transform = 'rotate(180deg)';
+            } else {
+                musicWidget.classList.replace('expanded', 'collapsed'); toggleIcon.style.transform = 'rotate(0deg)';
+            }
+        });
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBnnXlk6OXkwG-c2PqFeRal_YS4CxEO3qs", authDomain: "leroy-85ae4.firebaseapp.com", projectId: "leroy-85ae4", storageBucket: "leroy-85ae4.firebasestorage.app", messagingSenderId: "671645162081", appId: "1:671645162081:web:68e1992613aa29dd94a820",
+        };
+
+        const categoriesConfig = [
+            { id: 'cat-owner', name: 'THE BOSSS', classPrefix: 'owner', roleKey: 'THE BOSSS' },
+            { id: 'cat-leader', name: 'LEADERS', classPrefix: 'leader', roleKey: 'LEADERS' },
+            { id: 'cat-support', name: 'SUPPORT', classPrefix: 'support', roleKey: 'SUPPORT' },
+            { id: 'cat-member', name: 'MEMBERS', classPrefix: 'member', roleKey: 'MEMBERS' }
+        ];
+
+        let membersData = [
+
+        ];
+
+        const container = document.getElementById('categoryContainer');
+        const searchInput = document.getElementById('searchInput');
+        const noResults = document.getElementById('noResults');
+        const paginationContainer = document.getElementById('paginationContainer');
+
+        let currentPage = 1;
+        const membersPerPage = 12;
+
+        function initCategoryContainers() {
+            container.innerHTML = '';
+            categoriesConfig.forEach(cat => {
+                const section = document.createElement('div');
+                section.className = 'category-section smooth-fade';
+                section.id = `section-${cat.classPrefix}`;
+                
+                const totalCount = membersData.filter(m => m.role.toLowerCase() === cat.roleKey.toLowerCase()).length;
+
+                section.innerHTML = `
+                    <h2 class="category-title">${cat.name} <span class="cat-count">/ ${totalCount}</span></h2>
+                    <div class="member-grid" id="grid-${cat.classPrefix}"></div>
+                `;
+                container.appendChild(section);
+            });
+        }
+
+        function renderMembers(dataToRender, searchTerm = "") {
+            categoriesConfig.forEach(cat => {
+                document.getElementById(`grid-${cat.classPrefix}`).innerHTML = '';
+                document.getElementById(`section-${cat.classPrefix}`).classList.remove('has-data');
+            });
+
+            const filteredData = dataToRender.filter(member => 
+                member.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            noResults.style.display = filteredData.length === 0 ? 'block' : 'none';
+
+            const owners = filteredData.filter(m => m.role.toUpperCase() === 'THE BOSSS');
+            const leaders = filteredData.filter(m => m.role.toUpperCase() === 'LEADERS');
+            const supports = filteredData.filter(m => m.role.toUpperCase() === 'SUPPORT');
+            const allMembersList = filteredData.filter(m => m.role.toUpperCase() === 'MEMBERS');
+
+            const totalMemberPages = Math.ceil(allMembersList.length / membersPerPage) || 1;
+            if (currentPage > totalMemberPages) currentPage = totalMemberPages;
+
+            const startIndex = (currentPage - 1) * membersPerPage;
+            const endIndex = startIndex + membersPerPage;
+            const paginatedMembers = allMembersList.slice(startIndex, endIndex);
+
+            const renderGroup = (list, classPrefix) => {
+                if (list.length > 0) {
+                    const grid = document.getElementById(`grid-${classPrefix}`);
+                    const section = document.getElementById(`section-${classPrefix}`);
+                    
+                    list.forEach(member => {
+                        const card = document.createElement('div');
+                        card.className = `member-card smooth-fade`;
+                        const avatarUrl = member.avatar || 'https://placehold.co/150/222/777?text=U';
+                        
+                        // โครงสร้างการ์ดใหม่ (เพิ่มเส้นสแกน และวงเล็บมุมกรอบ)
+                        card.innerHTML = `
+                            <div class="scan-line"></div>
+                            <div class="corner-tl"></div><div class="corner-br"></div>
+                            
+                            <div class="avatar-container">
+                                <img src="${avatarUrl}" class="member-avatar" alt="${member.name}">
+                                <div class="status-dot"></div>
+                            </div>
+                            <div class="member-info">
+                                <p class="member-role">${member.role}</p>
+                                <h3 class="member-name" title="${member.name}">${member.name}</h3>
+                            </div>
+                            <a href="${member.facebookUrl || '#'}" target="_blank" class="fb-btn">
+                                <svg class="fb-icon" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                                ACCESS
+                            </a>
+                        `;
+                        grid.appendChild(card);
+                    });
+                    section.classList.add('has-data');
+                }
+            };
+
+            renderGroup(owners, 'owner');
+            renderGroup(leaders, 'leader');
+            renderGroup(supports, 'support');
+            renderGroup(paginatedMembers, 'member');
+
+            renderPagination(totalMemberPages);
+        }
+
+        function renderPagination(totalPages) {
+            paginationContainer.innerHTML = '';
+            if (totalPages <= 1) return;
+
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'page-arrow';
+            prevBtn.innerHTML = '❮';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.addEventListener('click', () => {
+                if (currentPage > 1) { 
+                    currentPage--; 
+                    renderMembers(membersData, searchInput.value); 
+                }
+            });
+            paginationContainer.appendChild(prevBtn);
+
+            for (let i = 1; i <= totalPages; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                pageBtn.innerText = i;
+                pageBtn.addEventListener('click', () => {
+                    currentPage = i;
+                    renderMembers(membersData, searchInput.value);
+                });
+                paginationContainer.appendChild(pageBtn);
+            }
+
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'page-arrow';
+            nextBtn.innerHTML = '❯';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.addEventListener('click', () => {
+                if (currentPage < totalPages) { 
+                    currentPage++; 
+                    renderMembers(membersData, searchInput.value); 
+                }
+            });
+            paginationContainer.appendChild(nextBtn);
+        }
+
+        initCategoryContainers();
+        renderMembers(membersData);
+
+        searchInput.addEventListener('input', (e) => {
+            currentPage = 1;
+            renderMembers(membersData, e.target.value);
+        });
+
+        // Firebase Connection
+        try {
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+
+            onSnapshot(doc(db, "settings", "homepage"), (docSnap) => {
+                if (docSnap.exists()) {
+                    const config = docSnap.data();
+                    if (config.bgUrl) document.getElementById('bg-image').style.backgroundImage = `url('${config.bgUrl}')`;
+                    if (config.faviconUrl) {
+                        const favEl = document.getElementById('siteFavicon');
+                        if (favEl) favEl.href = config.faviconUrl;
+                    }
+                    if (config.memberTitle) document.getElementById('dynMemberTitle').innerText = config.memberTitle;
+                    if (config.memberSubTitle) document.getElementById('dynMemberSubTitle').innerText = config.memberSubTitle;
+
+                    if(config.musicTitle) document.getElementById('musicTitle').innerText = config.musicTitle;
+                    if(config.musicLinkText) document.getElementById('musicLink').innerText = config.musicLinkText;
+                    if(config.musicLinkUrl) document.getElementById('musicLink').href = config.musicLinkUrl;
+                    if(config.musicCoverUrl) document.getElementById('musicCover').src = config.musicCoverUrl;
+                }
+            });
+
+            onSnapshot(collection(db, "members"), (snapshot) => {
+                if (!snapshot.empty) {
+                    let firebaseMembers = [];
+                    snapshot.forEach(doc => { firebaseMembers.push({ id: doc.id, ...doc.data() }); });
+                    membersData = firebaseMembers; 
+                    initCategoryContainers();
+                    renderMembers(membersData, searchInput.value);
+                }
+            }, (error) => {
+                console.warn("Using sample data for now.");
+            });
+
+        } catch (error) {
+            console.error("Firebase Init Error:", error);
+        }
+    </script>
+</body>
+</html>

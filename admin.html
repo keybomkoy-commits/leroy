@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYS.ADMIN // QAQEN QC</title>
+    <link rel="icon" id="siteFavicon" href="">
+    
+    <!-- นำเข้า Tailwind CSS และ SweetAlert2 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#000000',
+                        dark2: '#080808',
+                        dark3: '#111111',
+                        techWhite: '#ffffff',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        oswald: ['Oswald', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * { -webkit-user-drag: none; }
+        body { 
+            background-color: #000000; color: #fff; overflow-x: hidden; 
+            -webkit-font-smoothing: antialiased; 
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        /* พาเนลกระจกสไตล์ HUD เหลี่ยมจัด */
+        .glass-panel {
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0; /* ยกเลิกขอบมน */
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9), inset 0 0 20px rgba(255, 255, 255, 0.02);
+            position: relative;
+        }
+        /* มุม Brackets */
+        .glass-panel::before, .glass-panel::after {
+            content: ''; position: absolute; width: 15px; height: 15px; border: 2px solid #fff;
+        }
+        .glass-panel::before { top: -2px; left: -2px; border-right: none; border-bottom: none; }
+        .glass-panel::after { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+
+        .form-input {
+            background: rgba(15, 15, 15, 0.8); 
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff; border-radius: 0; padding: 14px 16px; width: 100%;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            font-size: 0.85rem; letter-spacing: 0.1em;
+        }
+        .form-input:focus { 
+            border-color: #fff; outline: none; 
+            background: rgba(25, 25, 25, 1);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+        .form-label { 
+            font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.2em; 
+            color: #aaa; margin-bottom: 8px; display: block; font-weight: 600; 
+        }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: scanIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes scanIn { 
+            0% { opacity: 0; clip-path: polygon(0 0, 100% 0, 100% 0, 0 0); transform: translateY(10px); } 
+            100% { opacity: 1; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); transform: translateY(0); } 
+        }
+
+        .btn-cyber { 
+            background: transparent; color: #fff; font-weight: 700; 
+            border: 1px solid rgba(255,255,255,0.4);
+            padding: 14px 20px; border-radius: 0; transition: all 0.3s ease; 
+            text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.8rem;
+            position: relative; overflow: hidden;
+        }
+        .btn-cyber:hover { 
+            background: #fff; color: #000; 
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.4); 
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: rgba(255, 0, 0, 0.05); color: #ff4444; border: 1px solid #ff4444;
+            padding: 14px 20px; border-radius: 0; font-weight: 700; letter-spacing: 0.2em;
+            text-transform: uppercase; font-size: 0.8rem; transition: all 0.3s ease;
+        }
+        .btn-danger:hover {
+            background: #ff4444; color: #000; box-shadow: 0 0 25px rgba(255, 0, 0, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .role-badge { 
+            font-size: 0.6rem; padding: 4px 10px; border-radius: 0; 
+            letter-spacing: 0.15em; text-transform: uppercase; font-weight: 700; 
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: #fff;
+        }
+
+        #loginOverlay {
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(30px);
+        }
+        .login-card {
+            background: rgba(10, 10, 10, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 25px 60px rgba(0,0,0,1), 0 0 40px rgba(255, 255, 255, 0.1);
+            border-radius: 0;
+        }
+        
+        /* สไตล์ Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #333; border: 1px solid #000; }
+        ::-webkit-scrollbar-thumb:hover { background: #fff; }
+
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center py-10 px-4">
+
+    <!-- หน้า Login -->
+    <div id="loginOverlay" class="fixed inset-0 z-50 flex items-center justify-center transition-all duration-700">
+        <div class="login-card p-10 w-full max-w-md flex flex-col gap-6 transform transition-transform duration-500 scale-100 relative" id="loginBox">
+            <div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-white -translate-x-1 -translate-y-1"></div>
+            <div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-white translate-x-1 translate-y-1"></div>
+            
+            <div class="text-center border-b border-gray-800 pb-5">
+                <div class="inline-block p-3 bg-white/5 border border-white/20 mb-3 text-white shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="0" ry="0"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </div>
+                <h2 class="font-oswald text-3xl tracking-[0.25em] uppercase font-bold text-white mb-1">SYSTEM ACCESS</h2>
+                <p class="text-[0.65rem] text-gray-400 tracking-[0.35em] uppercase font-semibold">QAQEN QC ADMINISTRATOR ONLY</p>
+            </div>
+            <div class="space-y-5">
+                <div>
+                    <label class="form-label text-white">ADMIN EMAIL</label>
+                    <input type="email" id="loginEmail" class="form-input" placeholder="ENTER CLEARANCE EMAIL">
+                </div>
+                <div>
+                    <label class="form-label text-white">SECURITY KEY</label>
+                    <input type="password" id="loginPass" class="form-input" placeholder="••••••••••••">
+                </div>
+                <button id="btnLogin" class="btn-cyber w-full mt-2">AUTHORIZE</button>
+            </div>
+            <div class="text-center mt-2">
+                <a href="index.html" class="text-[0.65rem] text-gray-500 hover:text-white tracking-widest uppercase transition-colors">◀ TERMINATE CONNECTION</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="w-full max-w-6xl mb-10 text-center relative z-10">
+        <a href="index.html" class="absolute left-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-xs tracking-widest border border-gray-800 px-4 py-2 transition-all hover:border-white">◀ EXIT TO HUB</a>
+        <h1 class="font-oswald text-4xl md:text-5xl tracking-[0.25em] uppercase font-bold text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500 mb-2" style="-webkit-text-stroke: 1px rgba(255,255,255,0.2);">SYS.ADMIN PANEL</h1>
+        <p class="text-xs text-gray-500 tracking-[0.4em] uppercase">CORE DATABASE MANAGEMENT</p>
+    </header>
+
+    <div class="w-full max-w-6xl flex flex-wrap gap-4 justify-center mb-10 z-10">
+        <button onclick="switchTab('tab-settings')" id="btn-tab-settings" class="px-8 py-3 border border-white bg-white text-black hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] transition-all text-xs tracking-widest font-bold uppercase">UI CONFIGURATION</button>
+        <button onclick="switchTab('tab-members')" id="btn-tab-members" class="px-8 py-3 border border-gray-700 bg-dark2 text-gray-400 hover:border-white hover:text-white transition-all text-xs tracking-widest font-bold uppercase">MEMBER DATABASE</button>
+    </div>
+
+    <!-- TAB: SETTINGS -->
+    <div id="tab-settings" class="tab-content w-full max-w-6xl z-10">
+        <div class="glass-panel p-8">
+            <h2 class="font-oswald text-2xl tracking-[0.2em] mb-6 border-b border-gray-800 pb-4 uppercase text-white flex items-center gap-3">
+                <div class="w-2 h-6 bg-white"></div>
+                Interface Protocol
+            </h2>
+            
+            <form id="settingsForm" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="form-label">Background URL</label>
+                        <input type="text" id="set_bgUrl" class="form-input" placeholder="https://...">
+                    </div>
+                    <div>
+                        <label class="form-label">Main Logo URL</label>
+                        <input type="text" id="set_logoUrl" class="form-input" placeholder="https://...">
+                    </div>
+                    <div>
+                        <label class="form-label">Favicon URL</label>
+                        <input type="text" id="set_faviconUrl" class="form-input" placeholder="https://...">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-800">
+                    <div>
+                        <label class="form-label">Logo Max Width (px / %)</label>
+                        <input type="text" id="set_logoWidth" class="form-input" placeholder="ex. 180px">
+                    </div>
+                    <div>
+                        <label class="form-label">Background Opacity (0.0 - 1.0)</label>
+                        <input type="number" step="0.05" min="0" max="1" id="set_bgOpacity" class="form-input" placeholder="ex. 0.90">
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-gray-800">
+                    <label class="form-label">Default Member Avatar URL</label>
+                    <input type="text" id="set_defaultAvatar" class="form-input" placeholder="https://...">
+                    <p class="text-[0.6rem] text-gray-500 mt-1 uppercase tracking-wider">* Fallback image for profiles missing data</p>
+                </div>
+
+                <h3 class="font-oswald text-xl tracking-[0.2em] mt-10 border-b border-gray-800 pb-2 text-gray-300">Typography Assets</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="p-5 border border-gray-800 bg-black">
+                        <label class="form-label text-white">Index Main Title</label>
+                        <input type="text" id="set_mainTitle" class="form-input mb-4" placeholder="QAQEN QC">
+                        <label class="form-label text-gray-400">Index Sub Title</label>
+                        <input type="text" id="set_subTitle" class="form-input" placeholder="SYSTEM HUB">
+                    </div>
+                    <div class="p-5 border border-gray-800 bg-black">
+                        <label class="form-label text-white">Database Title</label>
+                        <input type="text" id="set_memberTitle" class="form-input mb-4" placeholder="EXECUTIVE ROSTER">
+                        <label class="form-label text-gray-400">Database Sub Title</label>
+                        <input type="text" id="set_memberSubTitle" class="form-input" placeholder="OFFICIAL MEMBER DATABASE">
+                    </div>
+                </div>
+
+                <h3 class="font-oswald text-xl tracking-[0.2em] mt-10 border-b border-gray-800 pb-2 text-gray-300">Navigation Nodes</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="p-5 border border-gray-800 bg-black">
+                        <label class="form-label text-gray-300">Node 01 (Far Left)</label>
+                        <input type="text" id="set_farLeftBtnText" class="form-input mb-3" placeholder="LABEL">
+                        <input type="text" id="set_farLeftBtnUrl" class="form-input" placeholder="URL">
+                    </div>
+                    <div class="p-5 border border-gray-800 bg-black">
+                        <label class="form-label text-gray-300">Node 02 (Left)</label>
+                        <input type="text" id="set_leftBtnText" class="form-input mb-3" placeholder="LABEL">
+                        <input type="text" id="set_leftBtnUrl" class="form-input" placeholder="URL">
+                    </div>
+                    <div class="p-5 border border-gray-700 bg-gray-900 opacity-60">
+                        <label class="form-label text-white flex justify-between"><span>Core Node (Locked)</span> <span>🔒</span></label>
+                        <input type="text" class="form-input mb-3 cursor-not-allowed text-gray-500" value="MEMBER" disabled>
+                        <input type="text" class="form-input cursor-not-allowed text-gray-500" value="member.html" disabled>
+                    </div>
+                    <div class="p-5 border border-gray-800 bg-black">
+                        <label class="form-label text-gray-300">Node 04 (Right)</label>
+                        <input type="text" id="set_rightBtnText" class="form-input mb-3" placeholder="LABEL">
+                        <input type="text" id="set_rightBtnUrl" class="form-input" placeholder="URL">
+                    </div>
+                    <div class="p-5 border border-gray-800 bg-black">
+                        <label class="form-label text-gray-300">Node 05 (Far Right)</label>
+                        <input type="text" id="set_farRightBtnText" class="form-input mb-3" placeholder="LABEL">
+                        <input type="text" id="set_farRightBtnUrl" class="form-input" placeholder="URL">
+                    </div>
+                </div>
+
+                <h3 class="font-oswald text-xl tracking-[0.2em] mt-10 border-b border-gray-800 pb-2 text-gray-300">Audio Telemetry</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="form-label">Track Designation (ชื่อเพลง)</label>
+                        <input type="text" id="set_musicTitle" class="form-input" placeholder="DATA STREAM">
+                    </div>
+                    <div>
+                        <label class="form-label">Visual Cover URL</label>
+                        <input type="text" id="set_musicCoverUrl" class="form-input" placeholder="https://...">
+                    </div>
+                    <div>
+                        <label class="form-label">Source Node Text (ข้อความลิงก์)</label>
+                        <input type="text" id="set_musicLinkText" class="form-input" placeholder="SOURCE LINK">
+                    </div>
+                    <div>
+                        <label class="form-label">Source Endpoint URL (URL)</label>
+                        <input type="text" id="set_musicLinkUrl" class="form-input" placeholder="https://...">
+                    </div>
+                </div>
+
+                <div class="pt-8 flex flex-col lg:flex-row gap-4 justify-between border-t border-gray-800 mt-8">
+                    <!-- ระบบ Backup (ดาวน์โหลด และ อัปโหลด) -->
+                    <div class="flex flex-col md:flex-row gap-4 w-full lg:w-auto">
+                        <!-- ปุ่มดาวน์โหลด Export Backup -->
+                        <button type="button" id="btnExportBackup" class="btn-cyber border-gray-500 text-gray-300 hover:bg-gray-200 flex flex-1 items-center justify-center gap-2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            EXPORT BACKUP
+                        </button>
+                        
+                        <!-- ปุ่มอัปโหลด Import Backup -->
+                        <input type="file" id="fileImportBackup" accept=".json" class="hidden">
+                        <button type="button" id="btnImportBackup" class="btn-cyber border-gray-500 text-gray-300 hover:bg-gray-200 flex flex-1 items-center justify-center gap-2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                            IMPORT BACKUP
+                        </button>
+                    </div>
+
+                    <button type="button" id="btnSaveSettings" class="btn-cyber w-full lg:w-auto">OVERWRITE CONFIGURATION</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TAB: MEMBERS -->
+    <div id="tab-members" class="tab-content w-full max-w-6xl z-10">
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+            <!-- Form Card -->
+            <div class="xl:col-span-1">
+                <div class="glass-panel p-6 sticky top-6">
+                    <h2 id="memberFormTitle" class="font-oswald text-xl tracking-[0.2em] mb-6 border-b border-gray-800 pb-4 uppercase text-white flex items-center gap-3">
+                        <div class="w-2 h-5 bg-white"></div>
+                        ADD ENTITY
+                    </h2>
+                    
+                    <form id="memberForm" class="space-y-5">
+                        <input type="hidden" id="mem_id">
+                        <div>
+                            <label class="form-label">Entity Name (ชื่อ)</label>
+                            <input type="text" id="mem_name" class="form-input uppercase" placeholder="JOHN DOE" required>
+                        </div>
+                        <div>
+                            <label class="form-label">Clearance Level (ตำแหน่ง)</label>
+                            <select id="mem_role" class="form-input cursor-pointer" required>
+                                <option value="" disabled selected>-- SELECT CLASS --</option>
+                                <option value="THE BOSSS">THE BOSSS [TIER 1]</option>
+                                <option value="LEADERS">LEADERS [TIER 2]</option>
+                                <option value="SUPPORT">SUPPORT [TIER 3]</option>
+                                <option value="MEMBERS">MEMBERS [TIER 4]</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">Visual Data URL (รูปโปรไฟล์)</label>
+                            <input type="text" id="mem_avatar" class="form-input" placeholder="Blank = Default Setup">
+                        </div>
+                        <div>
+                            <label class="form-label">Social Link Endpoint (URL)</label>
+                            <input type="text" id="mem_facebook" class="form-input" placeholder="https://...">
+                        </div>
+                        <div class="pt-4 flex flex-col gap-3">
+                            <button type="submit" id="btnSaveMember" class="btn-cyber w-full">INJECT DATA</button>
+                            <button type="button" id="btnCancelEdit" class="w-full px-4 py-3 border border-gray-700 bg-transparent text-gray-400 hover:bg-gray-800 hover:text-white transition-all uppercase tracking-widest text-xs font-bold hidden">ABORT EDIT</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Table Card -->
+            <div class="xl:col-span-2">
+                <div class="glass-panel p-6">
+                    <div class="flex justify-between items-end mb-6 border-b border-gray-800 pb-4">
+                        <h2 class="font-oswald text-2xl tracking-[0.2em] uppercase text-white">Entity Registry</h2>
+                        <span id="totalMembers" class="text-[0.65rem] text-gray-400 tracking-[0.3em] uppercase font-bold border border-gray-800 px-3 py-1 bg-black">TOTAL COUNT: 00</span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="text-[0.65rem] uppercase tracking-[0.2em] text-gray-500 border-b border-gray-800">
+                                    <th class="pb-4 pl-4">Visual</th>
+                                    <th class="pb-4">Designation</th>
+                                    <th class="pb-4">Class</th>
+                                    <th class="pb-4 text-right pr-4">Execute</th>
+                                </tr>
+                            </thead>
+                            <tbody id="membersTableBody" class="text-sm font-medium">
+                                <tr><td colspan="4" class="text-center py-10 text-gray-600 tracking-widest text-xs uppercase">ESTABLISHING CONNECTION...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // ---------------- FIREBASE & AUTH INIT ----------------
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, doc, setDoc, addDoc, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyBnnXlk6OXkwG-c2PqFeRal_YS4CxEO3qs", authDomain: "leroy-85ae4.firebaseapp.com", projectId: "leroy-85ae4", storageBucket: "leroy-85ae4.firebasestorage.app", messagingSenderId: "671645162081", appId: "1:671645162081:web:68e1992613aa29dd94a820", };
+
+        let app, db, auth;
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+        } catch (error) {
+            console.error("Firebase Init Error:", error);
+        }
+
+        // ---------------- AUTHENTICATION ----------------
+        const loginOverlay = document.getElementById('loginOverlay');
+        const loginBox = document.getElementById('loginBox');
+        const loginEmail = document.getElementById('loginEmail');
+        const loginPass = document.getElementById('loginPass');
+        const btnLogin = document.getElementById('btnLogin');
+
+        if (sessionStorage.getItem('eliteAdminAuth') === 'granted') {
+            loginOverlay.style.display = 'none';
+        }
+
+        btnLogin.addEventListener('click', async () => {
+            const email = loginEmail.value.trim();
+            const pass = loginPass.value.trim();
+            
+            try {
+                Swal.fire({ title: 'AUTHENTICATING...', allowOutsideClick: false, background: '#000', color: '#fff', didOpen: () => Swal.showLoading() });
+                await signInWithEmailAndPassword(auth, email, pass);
+                
+                sessionStorage.setItem('eliteAdminAuth', 'granted');
+                loginBox.style.transform = 'scale(0.95)';
+                loginOverlay.style.opacity = '0';
+                setTimeout(() => { loginOverlay.style.display = 'none'; }, 700);
+                
+                Swal.fire({ 
+                    icon: 'success', title: 'ACCESS GRANTED', text: 'CONNECTION ESTABLISHED.', 
+                    timer: 1500, showConfirmButton: false, background: '#000', color: '#fff',
+                    customClass: { popup: 'border border-white rounded-none' }
+                });
+            } catch (error) {
+                Swal.fire({ 
+                    icon: 'error', title: 'ACCESS DENIED', text: 'INVALID CREDENTIALS.', 
+                    background: '#000', color: '#fff', confirmButtonColor: '#fff',
+                    customClass: { popup: 'border border-red-500 rounded-none', confirmButton: 'rounded-none text-black font-bold tracking-widest' }
+                });
+                loginEmail.value = ''; loginPass.value = '';
+            }
+        });
+        loginPass.addEventListener('keypress', (e) => { if(e.key === 'Enter') btnLogin.click(); });
+
+        // ---------------- TAB SYSTEM ----------------
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            
+            const btnSet = document.getElementById('btn-tab-settings');
+            const btnMem = document.getElementById('btn-tab-members');
+            
+            btnSet.className = "px-8 py-3 border border-gray-700 bg-dark2 text-gray-400 hover:border-white hover:text-white transition-all text-xs tracking-widest font-bold uppercase";
+            btnMem.className = "px-8 py-3 border border-gray-700 bg-dark2 text-gray-400 hover:border-white hover:text-white transition-all text-xs tracking-widest font-bold uppercase";
+            
+            const activeBtn = document.getElementById(tabId === 'tab-settings' ? 'btn-tab-settings' : 'btn-tab-members');
+            activeBtn.className = "px-8 py-3 border border-white bg-white text-black hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] transition-all text-xs tracking-widest font-bold uppercase";
+        }
+        switchTab('tab-settings');
+
+        // ---------------- UI SETTINGS (READ & SAVE) ----------------
+        const settingsFields = ['bgUrl', 'logoUrl', 'faviconUrl', 'logoWidth', 'bgOpacity', 'defaultAvatar', 'mainTitle', 'subTitle', 'memberTitle', 'memberSubTitle', 'farLeftBtnText', 'farLeftBtnUrl', 'leftBtnText', 'leftBtnUrl', 'rightBtnText', 'rightBtnUrl', 'farRightBtnText', 'farRightBtnUrl', 'musicTitle', 'musicCoverUrl', 'musicLinkText', 'musicLinkUrl'];
+
+        onSnapshot(doc(db, "settings", "homepage"), (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                settingsFields.forEach(field => {
+                    const input = document.getElementById(`set_${field}`);
+                    if(input && data[field] !== undefined) input.value = data[field];
+                });
+                if (data.faviconUrl) {
+                    const faviconTag = document.getElementById('siteFavicon');
+                    if (faviconTag) faviconTag.href = data.faviconUrl;
+                }
+            }
+        });
+
+        document.getElementById('btnSaveSettings').addEventListener('click', async () => {
+            const dataToSave = {};
+            settingsFields.forEach(field => { dataToSave[field] = document.getElementById(`set_${field}`).value; });
+            
+            try {
+                Swal.fire({ title: 'UPLOADING DATA...', allowOutsideClick: false, background: '#000', color: '#fff', didOpen: () => Swal.showLoading() });
+                await setDoc(doc(db, "settings", "homepage"), dataToSave, { merge: true });
+                Swal.fire({ icon: 'success', title: 'UPDATE COMPLETE', text: 'SYSTEM INTERFACE RECONFIGURED.', timer: 2000, showConfirmButton: false, background: '#000', color: '#fff' });
+            } catch (error) {
+                Swal.fire('ERROR', error.message, 'error');
+            }
+        });
+
+        // ---------------- BACKUP IMPORT / EXPORT SYSTEM ----------------
+        
+        // ฟังก์ชัน 1: โหลด Backup มาเป็น JSON (Export)
+        document.getElementById('btnExportBackup').addEventListener('click', async () => {
+            try {
+                Swal.fire({ title: 'COMPILING BACKUP...', allowOutsideClick: false, background: '#000', color: '#fff', didOpen: () => Swal.showLoading() });
+                
+                const settingsSnap = await getDocs(collection(db, "settings"));
+                let settingsData = {};
+                settingsSnap.forEach(doc => { settingsData[doc.id] = doc.data(); });
+                
+                const membersSnap = await getDocs(collection(db, "members"));
+                let membersData = [];
+                membersSnap.forEach(doc => { membersData.push({ id: doc.id, ...doc.data() }); });
+                
+                const backupPayload = {
+                    metadata: {
+                        timestamp: new Date().toISOString(),
+                        system: "QAQEN_QC_DATABASE",
+                        totalMembers: membersData.length
+                    },
+                    collections: {
+                        settings: settingsData,
+                        members: membersData
+                    }
+                };
+                
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupPayload, null, 4));
+                const dlNode = document.createElement('a');
+                dlNode.setAttribute("href", dataStr);
+                
+                const dateStr = new Date().toISOString().split('T')[0];
+                dlNode.setAttribute("download", `QAQEN_BACKUP_${dateStr}.json`);
+                
+                document.body.appendChild(dlNode);
+                dlNode.click();
+                dlNode.remove();
+                
+                Swal.fire({ icon: 'success', title: 'BACKUP SUCCESSFUL', text: 'FILE DOWNLOADED TO LOCAL STORAGE.', background: '#000', color: '#fff', confirmButtonColor: '#fff', customClass: { confirmButton: 'text-black font-bold rounded-none', popup: 'border border-white rounded-none' }});
+                
+            } catch (error) {
+                Swal.fire({ icon: 'error', title: 'BACKUP FAILED', text: error.message, background: '#000', color: '#fff', confirmButtonColor: '#fff' });
+            }
+        });
+
+        // ฟังก์ชัน 2: อัปโหลดและเขียนทับฐานข้อมูล (Import)
+        const fileImportBackup = document.getElementById('fileImportBackup');
+        document.getElementById('btnImportBackup').addEventListener('click', () => {
+            fileImportBackup.click(); // ทริกเกอร์ให้เปิดหน้าต่างเลือกไฟล์
+        });
+
+        fileImportBackup.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const parsedData = JSON.parse(event.target.result);
+                    
+                    // ตรวจสอบความถูกต้องของไฟล์ว่าเป็นไฟล์ Backup ของระบบนี้จริงๆ
+                    if (!parsedData.metadata || parsedData.metadata.system !== "QAQEN_QC_DATABASE") {
+                        throw new Error("INVALID OR CORRUPT BACKUP FILE.");
+                    }
+
+                    Swal.fire({
+                        title: 'SYSTEM OVERRIDE',
+                        text: "IMPORTING BACKUP WILL ERASE ALL CURRENT DATA. PROCEED?",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ff0000',
+                        cancelButtonColor: '#333',
+                        confirmButtonText: 'EXECUTE RESTORE',
+                        cancelButtonText: 'ABORT',
+                        background: '#000', color: '#fff',
+                        customClass: { popup: 'border border-red-500 rounded-none', confirmButton: 'rounded-none font-bold tracking-widest', cancelButton: 'rounded-none font-bold tracking-widest' }
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            Swal.fire({ title: 'RESTORING DATABASE...', allowOutsideClick: false, background: '#000', color: '#fff', didOpen: () => Swal.showLoading() });
+                            
+                            // 1. นำเข้าการตั้งค่าหน้าเว็บ
+                            const settingsCol = parsedData.collections.settings;
+                            if (settingsCol && settingsCol.homepage) {
+                                await setDoc(doc(db, "settings", "homepage"), settingsCol.homepage);
+                            }
+
+                            // 2. ลบสมาชิกชุดปัจจุบันที่มีอยู่ออกทั้งหมด
+                            const currentMembersSnap = await getDocs(collection(db, "members"));
+                            const deletePromises = [];
+                            currentMembersSnap.forEach(docSnap => {
+                                deletePromises.push(deleteDoc(doc(db, "members", docSnap.id)));
+                            });
+                            await Promise.all(deletePromises);
+
+                            // 3. นำเข้าข้อมูลสมาชิกจากไฟล์ Backup
+                            const membersCol = parsedData.collections.members || [];
+                            const insertPromises = [];
+                            membersCol.forEach(member => {
+                                const { id, ...memberData } = member; // แยก id ออกจาก data
+                                if (id) {
+                                    insertPromises.push(setDoc(doc(db, "members", id), memberData));
+                                } else {
+                                    insertPromises.push(addDoc(collection(db, "members"), memberData));
+                                }
+                            });
+                            await Promise.all(insertPromises);
+
+                            fileImportBackup.value = ''; // รีเซ็ต input ไฟล์
+                            
+                            Swal.fire({ icon: 'success', title: 'RESTORE COMPLETE', text: 'SYSTEM DATA RECOVERED SUCCESSFULLY.', timer: 2000, showConfirmButton: false, background: '#000', color: '#fff', customClass: { popup: 'border border-white rounded-none' }});
+                        } else {
+                            fileImportBackup.value = ''; // กรณีผู้ใช้กดยกเลิก
+                        }
+                    });
+
+                } catch (error) {
+                    Swal.fire({ icon: 'error', title: 'IMPORT FAILED', text: error.message, background: '#000', color: '#fff', confirmButtonColor: '#fff', customClass: { confirmButton: 'text-black font-bold rounded-none', popup: 'border border-white rounded-none' }});
+                    fileImportBackup.value = '';
+                }
+            };
+            reader.readAsText(file);
+        });
+
+
+        // ---------------- MEMBER MANAGEMENT ----------------
+        let allMembers = [];
+        const tableBody = document.getElementById('membersTableBody');
+        const form = document.getElementById('memberForm');
+
+        onSnapshot(collection(db, "members"), (snapshot) => {
+            allMembers = [];
+            tableBody.innerHTML = '';
+            
+            if(snapshot.empty) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-10 text-gray-500 text-xs tracking-widest">-- NO DATA FOUND --</td></tr>';
+                document.getElementById('totalMembers').innerText = `TOTAL COUNT: 00`;
+                return;
+            }
+
+            snapshot.forEach(doc => { allMembers.push({ id: doc.id, ...doc.data() }); });
+
+            const roleOrder = { 'THE BOSSS': 1, 'LEADERS': 2, 'SUPPORT': 3, 'MEMBERS': 4 };
+            allMembers.sort((a, b) => (roleOrder[a.role] || 5) - (roleOrder[b.role] || 5));
+            
+            document.getElementById('totalMembers').innerText = `TOTAL COUNT: ${allMembers.length < 10 ? '0'+allMembers.length : allMembers.length}`;
+
+            allMembers.forEach(member => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-gray-800/50 hover:bg-white/5 transition-colors group';
+                const avatar = member.avatar || 'https://placehold.co/100/333/fff?text=U';
+                
+                tr.innerHTML = `
+                    <td class="py-3 pl-4">
+                        <img src="${avatar}" class="w-10 h-10 object-cover border border-gray-700 grayscale group-hover:grayscale-0 transition-all" alt="avatar">
+                    </td>
+                    <td class="py-3 text-gray-200 tracking-wider">${member.name}</td>
+                    <td class="py-3"><span class="role-badge">${member.role}</span></td>
+                    <td class="py-3 text-right pr-4 space-x-3">
+                        <button onclick="editMember('${member.id}')" class="text-gray-400 hover:text-white text-xs tracking-widest uppercase transition-colors">EDIT</button>
+                        <button onclick="deleteMember('${member.id}')" class="text-gray-600 hover:text-red-500 text-xs tracking-widest uppercase transition-colors">DEL</button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('mem_id').value;
+            const data = {
+                name: document.getElementById('mem_name').value.toUpperCase(),
+                role: document.getElementById('mem_role').value,
+                avatar: document.getElementById('mem_avatar').value.trim(),
+                facebookUrl: document.getElementById('mem_facebook').value
+            };
+
+            try {
+                Swal.fire({ title: 'PROCESSING...', allowOutsideClick: false, background: '#000', color: '#fff', didOpen: () => Swal.showLoading() });
+                if(id) {
+                    await updateDoc(doc(db, "members", id), data);
+                    Swal.fire({ icon: 'success', title: 'ENTITY UPDATED', timer: 1500, showConfirmButton: false, background: '#000', color: '#fff' });
+                } else {
+                    await addDoc(collection(db, "members"), data);
+                    Swal.fire({ icon: 'success', title: 'ENTITY INJECTED', timer: 1500, showConfirmButton: false, background: '#000', color: '#fff' });
+                }
+                resetForm();
+            } catch (error) {
+                Swal.fire('ERROR', error.message, 'error');
+            }
+        });
+
+        window.editMember = function(id) {
+            const member = allMembers.find(m => m.id === id);
+            if(member) {
+                document.getElementById('mem_id').value = member.id;
+                document.getElementById('mem_name').value = member.name;
+                document.getElementById('mem_role').value = member.role;
+                document.getElementById('mem_avatar').value = member.avatar || '';
+                document.getElementById('mem_facebook').value = member.facebookUrl || '';
+                
+                document.getElementById('memberFormTitle').innerHTML = '<div class="w-2 h-5 bg-white"></div> RECONFIGURE ENTITY';
+                document.getElementById('btnSaveMember').innerHTML = 'OVERWRITE DATA';
+                document.getElementById('btnCancelEdit').classList.remove('hidden');
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        document.getElementById('btnCancelEdit').addEventListener('click', resetForm);
+        
+        function resetForm() {
+            form.reset();
+            document.getElementById('mem_id').value = '';
+            document.getElementById('memberFormTitle').innerHTML = '<div class="w-2 h-5 bg-white"></div> ADD ENTITY';
+            document.getElementById('btnSaveMember').innerHTML = 'INJECT DATA';
+            document.getElementById('btnCancelEdit').classList.add('hidden');
+        }
+
+        window.deleteMember = function(id) {
+            Swal.fire({
+                title: 'CONFIRM PURGE?',
+                text: "THIS ACTION CANNOT BE REVERSED.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ff0000',
+                cancelButtonColor: '#333',
+                confirmButtonText: 'EXECUTE',
+                cancelButtonText: 'ABORT',
+                background: '#000',
+                color: '#fff',
+                customClass: { popup: 'border border-red-500 rounded-none', confirmButton: 'rounded-none font-bold tracking-widest', cancelButton: 'rounded-none font-bold tracking-widest' }
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        await deleteDoc(doc(db, "members", id));
+                        Swal.fire({ icon: 'success', title: 'ENTITY PURGED', timer: 1500, showConfirmButton: false, background: '#000', color: '#fff' });
+                    } catch (error) {
+                        Swal.fire('ERROR', error.message, 'error');
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
